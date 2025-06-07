@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import Link from 'next/link';
 import ConnectWallet from './connectwallet';
 
 export default function Header() {
@@ -29,7 +30,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Left side - Logo and Title */}
-          <div className="flex items-center space-x-3">
+          <Link href="/card" className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity duration-200">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
               <svg
                 className="w-6 h-6 text-white"
@@ -49,7 +50,7 @@ export default function Header() {
             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
               Trade Me Baby
             </span>
-          </div>
+          </Link>
 
           {/* Middle - Generate Card Button */}
           <motion.button
