@@ -1,6 +1,6 @@
 # WhereIsMyLunch - XRPL DID KYC System
 
-![Wiser Logo](public/wiserlogo.png)
+![Wiser Logo](public/logoimage.png)
 
 ## Overview
 
