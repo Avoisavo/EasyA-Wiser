@@ -49,29 +49,65 @@ export default function CardPage() {
   const [cardData, setCardData] = useState(null);
 
   useEffect(() => {
-    // This code runs only on the client-side
     const storedData = localStorage.getItem('newCardDetails');
     if (storedData) {
       setCardData(JSON.parse(storedData));
-      // Optional: remove the data from session storage after reading it
-      // sessionStorage.removeItem('newCardDetails'); 
     } else {
-      // If there are no card details, maybe redirect back to create page
       router.push('/create');
     }
   }, [router]);
 
-  // Floating text data with positions
-  const floatingTexts = [
-    { text: 'USD/EUR 1.0875', style: { top: '20%', left: '15%' }, delay: 0 },
-    { text: 'Currency Rate ↗', style: { top: '25%', right: '20%' }, delay: 500 },
-    { text: 'BTC $67,450', style: { bottom: '30%', left: '10%' }, delay: 1000 },
-    { text: 'Market Cap $2.3T', style: { bottom: '35%', right: '15%' }, delay: 1500 },
-    { text: 'Trading Volume +15%', style: { top: '40%', left: '5%' }, delay: 2000 },
-    { text: 'Portfolio Balance', style: { top: '45%', right: '10%' }, delay: 2500 },
-    { text: 'APY 12.5%', style: { bottom: '20%', left: '20%' }, delay: 3000 },
-    { text: 'Risk: Moderate', style: { bottom: '25%', right: '25%' }, delay: 3500 },
-  ];
+  const ActionButton = ({ children }) => (
+    <button
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)',
+        border: 'none',
+        borderRadius: '30px',
+        padding: '15px 40px',
+        color: 'white',
+        fontSize: '18px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        backdropFilter: 'blur(10px)',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.transform = 'translateY(-2px)';
+        e.target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+      }}
+    >
+      {children}
+    </button>
+  );
+
+  const CardInfoPanel = ({ type, status, limit }) => (
+    <div style={{
+      background: 'rgba(255,255,255,0.1)',
+      backdropFilter: 'blur(10px)',
+      borderRadius: '20px',
+      padding: '30px',
+      color: 'white',
+      width: '300px',
+    }}>
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ fontSize: '14px', opacity: 0.7, marginBottom: '5px' }}>Card Type:</div>
+        <div style={{ fontSize: '18px', fontWeight: '500' }}>{type}</div>
+      </div>
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ fontSize: '14px', opacity: 0.7, marginBottom: '5px' }}>Status:</div>
+        <div style={{ fontSize: '18px', fontWeight: '500' }}>{status}</div>
+      </div>
+      <div>
+        <div style={{ fontSize: '14px', opacity: 0.7, marginBottom: '5px' }}>Spending Limit:</div>
+        <div style={{ fontSize: '18px', fontWeight: '500' }}>${limit.toLocaleString()}</div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -81,49 +117,222 @@ export default function CardPage() {
         width: '100vw',
         position: 'relative',
         overflow: 'hidden',
-        background: 'radial-gradient(circle at 60% 30%, #f0f9ff 0%, #e0e7ef 80%, #dbeafe 100%)',
+        background: 'linear-gradient(135deg, #f0f9ff 0%, #3b82f6 100%)',
       }}>
-        {/* Grid overlay */}
+        {/* Stars/sparkles background */}
         <div style={{
           position: 'absolute',
           inset: 0,
+          background: 'radial-gradient(circle at 60% 30%, rgba(255,255,255,0.2) 0%, rgba(30,58,138,0.1) 100%)',
+          opacity: 0.9,
           zIndex: 0,
-          backgroundImage: `linear-gradient(to right, rgba(37,99,235,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(37,99,235,0.04) 1px, transparent 1px)`,
-          backgroundSize: '32px 32px',
-          pointerEvents: 'none',
         }} />
-        {/* Vignette overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          background: 'radial-gradient(circle at 60% 30%, rgba(96,165,250,0.10) 0%, rgba(255,255,255,0.7) 80%)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Floating text elements */}
-        {floatingTexts.map((item, index) => (
-          <FloatingText
-            key={index}
-            text={item.text}
-            style={item.style}
-            delay={item.delay}
-          />
-        ))}
 
         {cardData ? (
-          <Card3D cardDetails={cardData.card} cardholder={cardData.cardholder} />
+          <div style={{
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            paddingTop: '50px',
+            gap: '40px',
+            width: '100%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+          }}>
+            {/* Main content container */}
+            <div style={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0 40px',
+              position: 'relative',
+            }}>
+              {/* Left side - Card display */}
+              <div style={{ 
+                flex: '0 0 auto', 
+                marginRight: '60px',
+                marginTop: '100px',
+                marginLeft: '400px', // Changed from -40px to 40px to move card right
+                transform: 'scale(0.95)',
+              }}>
+                <Card3D cardDetails={cardData.card} cardholder={cardData.cardholder} />
+              </div>
+              
+              {/* Right side - Card info */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '20px',
+                padding: '40px',
+                color: '#000000',
+                width: '400px',
+                marginRight: '20px',
+                marginTop: '100px',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+                fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+              }}>
+                <div style={{ marginBottom: '25px' }}>
+                  <div style={{ 
+                    opacity: 0.6, 
+                    marginBottom: '8px',
+                    fontSize: '18px',
+                    letterSpacing: '0.5px',
+                    color: '#000000',
+                    fontWeight: '400',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}>
+                    <span role="img" aria-label="credit card" style={{ fontSize: '20px' }}>💳</span>
+                    Card Type:
+                  </div>
+                  <div style={{ 
+                    fontWeight: '600',
+                    fontSize: '26px',
+                    color: '#000000',
+                    letterSpacing: '-0.5px',
+                  }}>Virtual Visa</div>
+                </div>
+                <div style={{ marginBottom: '25px' }}>
+                  <div style={{ 
+                    opacity: 0.6, 
+                    marginBottom: '8px',
+                    fontSize: '18px',
+                    letterSpacing: '0.5px',
+                    color: '#000000',
+                    fontWeight: '400',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}>
+                    <span role="img" aria-label="check mark" style={{ fontSize: '20px' }}>✅</span>
+                    Status:
+                  </div>
+                  <div style={{ 
+                    fontWeight: '600',
+                    fontSize: '26px',
+                    color: '#000000',
+                    letterSpacing: '-0.5px',
+                  }}>Active</div>
+                </div>
+                <div>
+                  <div style={{ 
+                    opacity: 0.6, 
+                    marginBottom: '8px',
+                    fontSize: '18px',
+                    letterSpacing: '0.5px',
+                    color: '#000000',
+                    fontWeight: '400',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}>
+                    <span role="img" aria-label="money bag" style={{ fontSize: '20px' }}>💰</span>
+                    Spending Limit:
+                  </div>
+                  <div style={{ 
+                    fontWeight: '600',
+                    fontSize: '26px',
+                    color: '#000000',
+                    letterSpacing: '-0.5px',
+                  }}>${(5000).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '30px',
+              marginTop: '30px',
+              width: '100%',
+              justifyContent: 'center',
+            }}>
+              <button style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                border: 'none',
+                borderRadius: '30px',
+                padding: '20px 35px',
+                color: '#1a1a1a',
+                cursor: 'pointer',
+                backdropFilter: 'blur(20px)',
+                transition: 'all 0.3s ease',
+                width: '220px',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+                fontFamily: 'SF Pro Display, Inter, system-ui, -apple-system, sans-serif',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+              }}>
+                <span role="img" aria-label="send money" style={{ fontSize: '24px' }}>💸</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', opacity: 0.6, fontWeight: '500', letterSpacing: '1px', textTransform: 'uppercase' }}>Send</span>
+                  <span style={{ fontSize: '18px', fontWeight: '600', letterSpacing: '-0.5px' }}>Money</span>
+                </div>
+              </button>
+              <button style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                border: 'none',
+                borderRadius: '30px',
+                padding: '20px 35px',
+                color: '#1a1a1a',
+                cursor: 'pointer',
+                backdropFilter: 'blur(20px)',
+                transition: 'all 0.3s ease',
+                width: '220px',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+                fontFamily: 'SF Pro Display, Inter, system-ui, -apple-system, sans-serif',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+              }}>
+                <span role="img" aria-label="add funds" style={{ fontSize: '24px' }}>💰</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', opacity: 0.6, fontWeight: '500', letterSpacing: '1px', textTransform: 'uppercase' }}>Add</span>
+                  <span style={{ fontSize: '18px', fontWeight: '600', letterSpacing: '-0.5px' }}>Funds</span>
+                </div>
+              </button>
+              <button style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                border: 'none',
+                borderRadius: '30px',
+                padding: '20px 35px',
+                color: '#1a1a1a',
+                cursor: 'pointer',
+                backdropFilter: 'blur(20px)',
+                transition: 'all 0.3s ease',
+                width: '220px',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+                fontFamily: 'SF Pro Display, Inter, system-ui, -apple-system, sans-serif',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+              }}>
+                <span role="img" aria-label="settings" style={{ fontSize: '24px' }}>⚙️</span>
+                <span style={{ fontSize: '18px', fontWeight: '600', letterSpacing: '-0.5px' }}>Settings</span>
+              </button>
+            </div>
+          </div>
         ) : (
-          <p style={{
+          <div style={{
             position: 'absolute',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            color: '#1e293b',
+            color: 'white',
             fontFamily: 'sans-serif',
           }}>
             Loading card details...
-          </p>
+          </div>
         )}
       </div>
     </>
