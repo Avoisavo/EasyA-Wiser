@@ -1,115 +1,176 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { motion } from 'framer-motion';
+import { useCallback } from 'react';
+import { useRouter } from 'next/router';
+import Particles from 'react-tsparticles';
+import { loadSlim } from 'tsparticles-slim';
+import { SmoothCursor } from '../components/ui/smooth-cursor';
 
 export default function Home() {
+  const router = useRouter();
+  const particlesInit = useCallback(async (engine) => {
+    await loadSlim(engine);
+  }, []);
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <>
+      <SmoothCursor />
+      <div className="relative min-h-screen overflow-hidden flex items-center justify-center cursor-none">
+        {/* Dynamic Particles Background */}
+        <Particles
+          id="tsparticles"
+          init={particlesInit}
+          options={{
+            background: {
+              color: {
+                value: "transparent",
+              },
+            },
+            fpsLimit: 120,
+            particles: {
+              color: {
+                value: ["#2563eb", "#60a5fa", "#38bdf8", "#0ea5e9"],
+              },
+              links: {
+                color: "#2563eb",
+                distance: 150,
+                enable: true,
+                opacity: 0.15,
+                width: 1,
+              },
+              move: {
+                enable: true,
+                outModes: {
+                  default: "bounce",
+                },
+                random: true,
+                speed: 1,
+                straight: false,
+              },
+              number: {
+                density: {
+                  enable: true,
+                  area: 800,
+                },
+                value: 60,
+              },
+              opacity: {
+                value: 0.3,
+              },
+              shape: {
+                type: "circle",
+              },
+              size: {
+                value: { min: 1, max: 3 },
+              },
+              glow: {
+                enable: true,
+                color: "#60a5fa",
+                radius: 2,
+              },
+            },
+            detectRetina: true,
+          }}
+          className="absolute inset-0"
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+
+        {/* Futuristic Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-blue-100 opacity-95"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#dbeafe_1px,transparent_1px),linear-gradient(to_bottom,#dbeafe_1px,transparent_1px)] bg-[size:18px_28px]"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-200/30 via-blue-300/20 to-blue-400/10 animate-gradient"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.08),rgba(255,255,255,0.9))]"></div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Content */}
+        <div className="relative text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="relative"
+          >
+            <h1 className="text-8xl font-bold mb-6 relative">
+              <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 blur-2xl opacity-40 animate-pulse"></span>
+              <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700 animate-gradient-x">
+                Trade Me Baby
+              </span>
+            </h1>
+            <p className="text-xl text-gray-700 mb-8">
+              Revolutionizing the future of finance with cutting-edge technology
+            </p>
+            <button
+              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105"
+              onClick={() => router.push('/kyc-form')}
+            >
+              Get Started
+            </button>
+          </motion.div>
+        </div>
+
+        <style jsx global>{`
+          html,
+          body,
+          body *,
+          * {
+            cursor: none !important;
+          }
+          
+          html {
+            cursor: none !important;
+          }
+          
+          body {
+            cursor: none !important;
+          }
+          
+          /* Ensure all interactive elements also have no cursor */
+          button,
+          a,
+          input,
+          textarea,
+          select,
+          [role="button"],
+          [tabindex] {
+            cursor: none !important;
+          }
+          
+          /* Hide cursor on hover states too */
+          *:hover {
+            cursor: none !important;
+          }
+          
+          @keyframes gradient {
+            0% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
+          }
+          @keyframes gradient-x {
+            0% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
+          }
+          .animate-gradient {
+            animation: gradient 15s ease infinite;
+            background-size: 200% 200%;
+          }
+          .animate-gradient-x {
+            animation: gradient-x 3s ease infinite;
+            background-size: 200% 200%;
+          }
+        `}</style>
+      </div>
+    </>
   );
 }

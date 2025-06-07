@@ -69,6 +69,7 @@ export default function SimulateTransactionPage() {
         timestamp: new Date().toISOString(),
         amount: data.transaction.amount,
         merchant: data.transaction.merchant,
+        xrpl: data.xrpl || null // Include XRPL results
       });
       
       setStep(2); // Move to result step
@@ -240,6 +241,22 @@ export default function SimulateTransactionPage() {
                   <p className="text-gray-600">Date:</p>
                   <p className="text-gray-800">{new Date(transactionResult.timestamp).toLocaleString()}</p>
                 </div>
+                {transactionResult.xrpl && transactionResult.xrpl.hash && (
+                  <>
+                    <hr className="my-3 border-gray-300" />
+                    <div className="flex justify-between">
+                      <p className="text-gray-600">XRPL Explorer:</p>
+                      <a 
+                        href={`https://test.xrplexplorer.com/en/tx/${transactionResult.xrpl.hash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                      >
+                        View in Explorer
+                      </a>
+                    </div>
+                  </>
+                )}
               </div>
               <button
                 onClick={resetTransaction}
