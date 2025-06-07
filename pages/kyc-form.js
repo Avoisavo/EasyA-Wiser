@@ -1,7 +1,20 @@
 import React, { useState } from "react";
-import Header from "../components/header";
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import ConnectWallet from "../components/connectwallet";
+import { useWallet } from '../contexts/WalletContext';
 
 const KYCForm = () => {
+  // Header state
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const { isConnected, walletAddress, walletType, disconnect } = useWallet();
+
+  // Function to truncate wallet address for display
+  const truncateAddress = (address) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -99,46 +112,8 @@ const KYCForm = () => {
     "other",
   ];
 
-  const cardTypes = ["debit", "credit"];
-
-  // Format card number with spaces
-  const formatCardNumber = (value) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(" ");
-    }
-
-    return v;
-  };
-
-  // Format expiry date MM/YY
-  const formatExpiryDate = (value) => {
-    const v = value.replace(/\D/g, "");
-    if (v.length >= 2) {
-      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
-    }
-    return v;
-  };
-
   const handleInputChange = (e) => {
     const { name, value, type, checked, files } = e.target;
-
-    let processedValue = value;
-
-    // Special formatting for specific fields
-    if (name === "cardNumber") {
-      processedValue = formatCardNumber(value);
-    } else if (name === "expiryDate") {
-      processedValue = formatExpiryDate(value);
-    }
 
     setFormData((prev) => ({
       ...prev,
@@ -147,7 +122,7 @@ const KYCForm = () => {
           ? checked
           : type === "file"
           ? files[0]
-          : processedValue,
+          : value,
     }));
 
     // Clear error when user starts typing
@@ -331,11 +306,6 @@ const KYCForm = () => {
         sourceOfFunds: formData.sourceOfFunds,
         employer: formData.employer,
       },
-      cardData: {
-        cardNumber: formData.cardNumber.replace(/\s/g, ""),
-        bankName: formData.bankName,
-        cardType: formData.cardType,
-      },
       consents: {
         dataProcessing: formData.dataProcessing,
         kycVerification: formData.kycVerification,
@@ -379,7 +349,100 @@ const KYCForm = () => {
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
       `}</style>
-      <Header />
+      
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/70 border-b border-blue-100">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left side - Logo and Title */}
+            <Link href="/card" className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity duration-200">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
+                Trade Me Baby
+              </span>
+            </Link>
+
+            {/* Right side - Connect Wallet Button or Connected Address */}
+            {!isConnected ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-2 rounded-full border border-blue-200 bg-white/80 text-blue-700 font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center space-x-2"
+                onClick={() => setWalletModalOpen(true)}
+              >
+                <svg
+                  className="w-5 h-5 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <span>Connect Wallet</span>
+              </motion.button>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <div className="px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-medium flex items-center space-x-2">
+                  <img 
+                    src={walletType === 'crossmark' ? "/crossmart.png" : "/fox.png"} 
+                    alt={walletType} 
+                    className="w-5 h-5"
+                  />
+                  <span>{truncateAddress(walletAddress)}</span>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={disconnect}
+                  className="p-2 rounded-full hover:bg-red-50 text-red-500 transition-colors"
+                  title="Disconnect Wallet"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </motion.button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+      <ConnectWallet
+        open={walletModalOpen}
+        onClose={() => setWalletModalOpen(false)}
+      />
+
       <div className="min-h-screen bg-white py-8 px-4 pt-24">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
