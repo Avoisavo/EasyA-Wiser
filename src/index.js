@@ -228,6 +228,57 @@ class FixedAccountDID {
       throw error;
     }
   }
+
+  /**
+   * Create and publish DID to XRPL testnet
+   */
+  async createAndPublishDID() {
+    try {
+      // Check if DID already exists
+      try {
+        const existingDID = await this.resolveDID();
+        console.log("✅ DID already exists on testnet!");
+        return {
+          success: true,
+          did: existingDID.did,
+          address: existingDID.address,
+          alreadyExists: true,
+          didInfo: existingDID,
+        };
+      } catch (error) {
+        console.log("📝 DID not found, creating new one...");
+      }
+
+      // Create simple URI instead of full document (to avoid size issues)
+      const did = `did:xrpl:${this.wallet.address}`;
+      const didUri = `https://whereismylunch.com/did/${this.wallet.address}`;
+
+      console.log("📄 Creating DID with URI...");
+
+      // Publish to testnet using URI approach
+      console.log("🚀 Publishing DID to XRPL testnet...");
+      const txHash = await this.submitDIDUriTransaction(didUri);
+
+      console.log("✅ DID published successfully!");
+      console.log(`- Transaction Hash: ${txHash}`);
+      console.log(
+        `- Explorer: https://testnet.xrpl.org/transactions/${txHash}`
+      );
+
+      return {
+        success: true,
+        did: did,
+        address: this.wallet.address,
+        transactionHash: txHash,
+        explorerUrl: `https://testnet.xrpl.org/transactions/${txHash}`,
+        alreadyExists: false,
+        didUri: didUri,
+      };
+    } catch (error) {
+      console.error("❌ Error creating and publishing DID:", error);
+      throw error;
+    }
+  }
 }
 
 module.exports = FixedAccountDID;
