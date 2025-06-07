@@ -2,7 +2,6 @@ import React, { useState } from "react";
 
 const KYCForm = () => {
   const [formData, setFormData] = useState({
-    // Personal Information
     fullName: "",
     dateOfBirth: "",
     nationality: "",
@@ -10,29 +9,9 @@ const KYCForm = () => {
     phoneNumber: "",
     email: "",
     occupation: "",
-
-    // Identity Verification
     identityDocType: "",
     identityDocument: null,
-
-    // Address Verification
     addressDocument: null,
-
-    // Financial Information
-    incomeRange: "",
-    employmentStatus: "",
-    payslip: null,
-
-    // Debit Card Linking
-    cardholderName: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    billingAddress: "",
-
-    // Consents
-    dataProcessingConsent: false,
-    dataSharingConsent: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -57,55 +36,11 @@ const KYCForm = () => {
     "Mexico",
   ];
 
-  const incomeRanges = [
-    "< $20,000",
-    "$20,000 - $50,000",
-    "$50,000 - $100,000",
-    "$100,000 - $200,000",
-    "$200,000+",
-  ];
-
-  const employmentStatuses = [
-    "Employed",
-    "Self-employed",
-    "Student",
-    "Unemployed",
-    "Retired",
-  ];
-
-  // Format card number with spaces
-  const formatCardNumber = (value) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(" ");
-    }
-
-    return v;
-  };
-
-  // Format expiry date MM/YY
-  const formatExpiryDate = (value) => {
-    const v = value.replace(/\D/g, "");
-    if (v.length >= 2) {
-      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
-    }
-    return v;
-  };
-
   const handleInputChange = (e) => {
     const { name, value, type, checked, files } = e.target;
 
     let processedValue = value;
 
-    // Special formatting for specific fields
     if (name === "cardNumber") {
       processedValue = formatCardNumber(value);
     } else if (name === "expiryDate") {
@@ -122,7 +57,6 @@ const KYCForm = () => {
           : processedValue,
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -133,8 +67,6 @@ const KYCForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-
-    // Personal Information validation
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
     if (!formData.dateOfBirth)
       newErrors.dateOfBirth = "Date of birth is required";
@@ -147,38 +79,12 @@ const KYCForm = () => {
     if (!formData.email.trim()) newErrors.email = "Email address is required";
     if (!formData.occupation.trim())
       newErrors.occupation = "Occupation is required";
-
-    // Identity document validation
     if (!formData.identityDocType)
-      newErrors.identityDocType = "Please select an identity document type";
+      newErrors.identityDocType = "Identity document type is required";
     if (!formData.identityDocument)
-      newErrors.identityDocument = "Please upload your identity document";
-
-    // Address document validation
+      newErrors.identityDocument = "Identity document is required";
     if (!formData.addressDocument)
-      newErrors.addressDocument = "Please upload address verification document";
-
-    // Financial information validation
-    if (!formData.incomeRange)
-      newErrors.incomeRange = "Please select your income range";
-    if (!formData.employmentStatus)
-      newErrors.employmentStatus = "Please select your employment status";
-
-    // Debit card validation
-    if (!formData.cardholderName.trim())
-      newErrors.cardholderName = "Cardholder name is required";
-    if (!formData.cardNumber.replace(/\s/g, ""))
-      newErrors.cardNumber = "Card number is required";
-    if (!formData.expiryDate) newErrors.expiryDate = "Expiry date is required";
-    if (!formData.cvv) newErrors.cvv = "CVV is required";
-    if (!formData.billingAddress.trim())
-      newErrors.billingAddress = "Billing address is required";
-
-    // Consent validation
-    if (!formData.dataProcessingConsent)
-      newErrors.dataProcessingConsent = "Data processing consent is required";
-    if (!formData.dataSharingConsent)
-      newErrors.dataSharingConsent = "Data sharing consent is required";
+      newErrors.addressDocument = "Address document is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -186,13 +92,11 @@ const KYCForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (validateForm()) {
       console.log("KYC Form Submitted:", formData);
       alert(
         "KYC form submitted successfully! Processing identity verification..."
       );
-      // Here you would integrate with your KYC-based DID system
     } else {
       alert("Please fix the errors in the form before submitting.");
     }
@@ -201,7 +105,6 @@ const KYCForm = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-10 p-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">
             🔐 Know Your Customer (KYC) Verification
@@ -215,7 +118,6 @@ const KYCForm = () => {
           onSubmit={handleSubmit}
           className="bg-white rounded-xl shadow-lg overflow-hidden"
         >
-          {/* Section 1: Personal Information */}
           <div className="p-8 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800 mb-6">
               📋 1. Personal Information
@@ -523,301 +425,6 @@ const KYCForm = () => {
                 </span>
               )}
             </div>
-          </div>
-
-          {/* Section 4: Financial Information */}
-          <div className="p-8 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
-              💰 4. Financial Information
-            </h2>
-
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="incomeRange"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Income Range *
-                  </label>
-                  <select
-                    id="incomeRange"
-                    name="incomeRange"
-                    value={formData.incomeRange}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  >
-                    <option value="">Select income range</option>
-                    {incomeRanges.map((range) => (
-                      <option key={range} value={range}>
-                        {range}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.incomeRange && (
-                    <span className="text-red-600 text-sm mt-1 block">
-                      {errors.incomeRange}
-                    </span>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="employmentStatus"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Employment Status *
-                  </label>
-                  <select
-                    id="employmentStatus"
-                    name="employmentStatus"
-                    value={formData.employmentStatus}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  >
-                    <option value="">Select status</option>
-                    {employmentStatuses.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.employmentStatus && (
-                    <span className="text-red-600 text-sm mt-1 block">
-                      {errors.employmentStatus}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="payslip"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Payslip Upload (Optional)
-                </label>
-                <input
-                  type="file"
-                  id="payslip"
-                  name="payslip"
-                  onChange={handleInputChange}
-                  accept="image/*,.pdf"
-                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
-                />
-                <small className="text-gray-500 mt-1 block">
-                  Upload your most recent payslip for verification
-                </small>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 5: Debit Card Linking Details */}
-          <div className="p-8 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
-              💳 5. Debit Card Linking Details
-            </h2>
-
-            <div className="space-y-6">
-              <div>
-                <label
-                  htmlFor="cardholderName"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Cardholder Name *
-                </label>
-                <input
-                  type="text"
-                  id="cardholderName"
-                  name="cardholderName"
-                  value={formData.cardholderName}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Name as it appears on card"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                />
-                <small className="text-gray-500 mt-1 block">
-                  Must match the name on your card exactly
-                </small>
-                {errors.cardholderName && (
-                  <span className="text-red-600 text-sm mt-1 block">
-                    {errors.cardholderName}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="cardNumber"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Card Number *
-                  </label>
-                  <input
-                    type="text"
-                    id="cardNumber"
-                    name="cardNumber"
-                    value={formData.cardNumber}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="1234 5678 9012 3456"
-                    maxLength="19"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  />
-                  {errors.cardNumber && (
-                    <span className="text-red-600 text-sm mt-1 block">
-                      {errors.cardNumber}
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label
-                      htmlFor="expiryDate"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Expiry Date *
-                    </label>
-                    <input
-                      type="text"
-                      id="expiryDate"
-                      name="expiryDate"
-                      value={formData.expiryDate}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="MM/YY"
-                      maxLength="5"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                    />
-                    {errors.expiryDate && (
-                      <span className="text-red-600 text-sm mt-1 block">
-                        {errors.expiryDate}
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="cvv"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      CVV *
-                    </label>
-                    <input
-                      type="password"
-                      id="cvv"
-                      name="cvv"
-                      value={formData.cvv}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="123"
-                      maxLength="4"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                    />
-                    {errors.cvv && (
-                      <span className="text-red-600 text-sm mt-1 block">
-                        {errors.cvv}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="billingAddress"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Billing Address *
-                </label>
-                <textarea
-                  id="billingAddress"
-                  name="billingAddress"
-                  value={formData.billingAddress}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Street address, City, State, ZIP/Postal Code, Country"
-                  rows="3"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                />
-                {errors.billingAddress && (
-                  <span className="text-red-600 text-sm mt-1 block">
-                    {errors.billingAddress}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Section 6: Consent & Declarations */}
-          <div className="p-8 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
-              ✅ 6. Consent & Declarations
-            </h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="flex items-start cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="dataProcessingConsent"
-                    checked={formData.dataProcessingConsent}
-                    onChange={handleInputChange}
-                    required
-                    className="mt-1 mr-3 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="text-gray-700">
-                    I agree to the use of my data for KYC verification *
-                  </span>
-                </label>
-                {errors.dataProcessingConsent && (
-                  <span className="text-red-600 text-sm mt-1 block ml-6">
-                    {errors.dataProcessingConsent}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <label className="flex items-start cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="dataSharingConsent"
-                    checked={formData.dataSharingConsent}
-                    onChange={handleInputChange}
-                    required
-                    className="mt-1 mr-3 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="text-gray-700">
-                    I consent to share my information with financial
-                    institutions and crypto exchanges *
-                  </span>
-                </label>
-                {errors.dataSharingConsent && (
-                  <span className="text-red-600 text-sm mt-1 block ml-6">
-                    {errors.dataSharingConsent}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="p-8 bg-gray-50 text-center">
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 px-8 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 text-lg"
-            >
-              🚀 Submit KYC Verification
-            </button>
-            <p className="text-gray-600 mt-4 max-w-md mx-auto text-sm leading-relaxed">
-              By submitting this form, you will begin the identity verification
-              process. Upon successful verification, a unique DID will be issued
-              to your identity.
-            </p>
           </div>
         </form>
       </div>
