@@ -108,9 +108,37 @@ export default function LandingPage() {
         </div>
 
         <style jsx global>{`
+          html,
+          body,
+          body *,
           * {
             cursor: none !important;
           }
+          
+          html {
+            cursor: none !important;
+          }
+          
+          body {
+            cursor: none !important;
+          }
+          
+          /* Ensure all interactive elements also have no cursor */
+          button,
+          a,
+          input,
+          textarea,
+          select,
+          [role="button"],
+          [tabindex] {
+            cursor: none !important;
+          }
+          
+          /* Hide cursor on hover states too */
+          *:hover {
+            cursor: none !important;
+          }
+          
           @keyframes gradient {
             0% {
               background-position: 0% 50%;
