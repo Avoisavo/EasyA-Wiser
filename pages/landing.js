@@ -26,13 +26,13 @@ export default function LandingPage() {
             fpsLimit: 120,
             particles: {
               color: {
-                value: ["#00ff00", "#00ffff", "#ff00ff", "#ffff00"],
+                value: ["#2563eb", "#60a5fa", "#38bdf8", "#0ea5e9"],
               },
               links: {
-                color: "#ffffff",
+                color: "#2563eb",
                 distance: 150,
                 enable: true,
-                opacity: 0.2,
+                opacity: 0.15,
                 width: 1,
               },
               move: {
@@ -49,10 +49,10 @@ export default function LandingPage() {
                   enable: true,
                   area: 800,
                 },
-                value: 80,
+                value: 60,
               },
               opacity: {
-                value: 0.5,
+                value: 0.3,
               },
               shape: {
                 type: "circle",
@@ -62,7 +62,7 @@ export default function LandingPage() {
               },
               glow: {
                 enable: true,
-                color: "#ffffff",
+                color: "#60a5fa",
                 radius: 2,
               },
             },
@@ -73,10 +73,10 @@ export default function LandingPage() {
 
         {/* Futuristic Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black opacity-90"></div>
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-gradient"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(17,24,39,0),rgba(17,24,39,1))]"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-blue-100 opacity-95"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#dbeafe_1px,transparent_1px),linear-gradient(to_bottom,#dbeafe_1px,transparent_1px)] bg-[size:18px_28px]"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-200/30 via-blue-300/20 to-blue-400/10 animate-gradient"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.08),rgba(255,255,255,0.9))]"></div>
         </div>
 
         {/* Content */}
@@ -88,15 +88,15 @@ export default function LandingPage() {
             className="relative"
           >
             <h1 className="text-8xl font-bold mb-6 relative">
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 blur-xl opacity-50 animate-pulse"></span>
-              <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 animate-gradient-x">
+              <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 blur-2xl opacity-40 animate-pulse"></span>
+              <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700 animate-gradient-x">
                 Trade Me Baby
               </span>
             </h1>
-            <p className="text-xl text-gray-300 mb-8">
+            <p className="text-xl text-gray-700 mb-8">
               Revolutionizing the future of finance with cutting-edge technology
             </p>
-            <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105">
+            <button className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105">
               Get Started
             </button>
           </motion.div>
