@@ -160,6 +160,115 @@ export default function SendCurrency() {
     }
   };
 
+  // Send Currency
+  const sendCurrency = async () => {
+    if (!currencyCode || !issuer || !amount || !destination) {
+      alert('Please enter all required fields');
+      return;
+    }
+    
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults('===Sending Currency===\n\n');
+      
+      const currentAccount = activeAccount === 'account1' ? account1 : account2;
+      const wallet = xrpl.Wallet.fromSeed(currentAccount.seed);
+      
+      const send_currency_tx = {
+        "TransactionType": "Payment",
+        "Account": wallet.address,
+        "Amount": {
+          "currency": currencyCode,
+          "value": amount,
+          "issuer": issuer
+        },
+        "Destination": destination
+      };
+      
+      setResults(prev => prev + `Sending ${amount} ${currencyCode} to ${destination}...\n`);
+      
+      const pay_prepared = await client.autofill(send_currency_tx);
+      const pay_signed = wallet.sign(pay_prepared);
+      const pay_result = await client.submitAndWait(pay_signed.tx_blob);
+      
+      if (pay_result.result.meta.TransactionResult == "tesSUCCESS") {
+        setResults(prev => prev + '\n===Transaction succeeded===\n');
+        setResults(prev => prev + `Transaction hash: ${pay_result.result.hash}\n`);
+      } else {
+        setResults(prev => prev + `\n===Transaction failed: ${pay_result.result.meta.TransactionResult}===\n`);
+      }
+      
+      // Update XRP balance
+      const balance = await client.getXrpBalance(wallet.address);
+      setXrpBalance(balance);
+      
+    } catch (error) {
+      console.error('Error sending currency:', error);
+      setResults(prev => prev + `\n===Error: ${error.message}===\n`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
+  // Get Token Balance
+  const getTokenBalance = async () => {
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults('===Getting Token Balance===\n\n');
+      
+      const currentAccount = activeAccount === 'account1' ? account1 : account2;
+      const wallet = xrpl.Wallet.fromSeed(currentAccount.seed);
+      
+      // Get token balances
+      const balance = await client.request({
+        command: "account_lines",
+        account: wallet.address,
+        ledger_index: "validated",
+      });
+      
+      setResults(prev => prev + `${currentAccount.name || 'Account'}'s token balances:\n`);
+      
+      if (balance.result.lines.length === 0) {
+        setResults(prev => prev + 'No token balances found\n');
+      } else {
+        balance.result.lines.forEach(line => {
+          setResults(prev => prev + `Currency: ${line.currency}\n`);
+          setResults(prev => prev + `Balance: ${line.balance}\n`);
+          setResults(prev => prev + `Issuer: ${line.account}\n`);
+          setResults(prev => prev + '---\n');
+        });
+      }
+      
+      // Also get XRP balance
+      const xrpBal = await client.getXrpBalance(wallet.address);
+      setXrpBalance(xrpBal);
+      setResults(prev => prev + `XRP Balance: ${xrpBal}\n`);
+      
+    } catch (error) {
+      console.error('Error getting token balance:', error);
+      setResults(prev => prev + `\n===Error: ${error.message}===\n`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
+  // Update active account display when selection changes
+  useEffect(() => {
+    if ((activeAccount === 'account1' && account1.seed) || (activeAccount === 'account2' && account2.seed)) {
+      getTokenBalance();
+    }
+  }, [activeAccount]);
+
   const currentAccount = activeAccount === 'account1' ? account1 : account2;
 
   return (
@@ -432,16 +541,18 @@ export default function SendCurrency() {
               Create Trust Line
             </button>
             <button
+              onClick={sendCurrency}
               disabled={loading}
               className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
             >
-              Send Currency (Coming Soon)
+              Send Currency
             </button>
             <button
+              onClick={getTokenBalance}
               disabled={loading}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
             >
-              Get Token Balance (Coming Soon)
+              Get Token Balance
             </button>
           </div>
         </div>
@@ -453,10 +564,21 @@ export default function SendCurrency() {
             value={results}
             onChange={(e) => setResults(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-            rows={10}
+            rows={15}
             placeholder="Results will appear here..."
           />
         </div>
+
+        {loading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span>Processing...</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
