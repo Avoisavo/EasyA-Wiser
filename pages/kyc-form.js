@@ -377,61 +377,84 @@ const KYCForm = () => {
 
   return (
     <>
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounce-in {
+          0% { opacity: 0; transform: scale(0.3); }
+          50% { opacity: 1; transform: scale(1.05); }
+          70% { transform: scale(0.9); }
+          100% { transform: scale(1); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .animate-bounce-in {
+          animation: bounce-in 0.8s ease-out;
+        }
+        .hover\\:shadow-3xl:hover {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+      `}</style>
       <Header />
-      <div className="min-h-screen bg-gray-50 py-8 px-4 pt-24">
+      <div className="min-h-screen bg-white py-8 px-4 pt-24">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8 p-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg">
+          <div className="text-center mb-8 p-8 bg-blue-600 text-white rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 border border-blue-200">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">
               🔐 Know Your Customer (KYC) Verification
             </h1>
-            <p className="text-lg opacity-90">
+            <p className="text-lg opacity-90 animate-fade-in">
               Complete all sections to verify your identity and receive your DID
             </p>
           </div>
 
           {/* Success Page */}
           {currentStep === totalSteps + 1 && submitResult && (
-            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 text-center border border-blue-200 transform animate-bounce-in">
               <div className="mb-6">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-4xl">🎉</span>
+                <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
+                  <span className="text-5xl animate-bounce">🎉</span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                <h2 className="text-3xl font-bold text-blue-600 mb-2">
                   KYC Verification Complete!
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-lg">
                   Your identity has been verified and your DID has been created
                   successfully.
                 </p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                <h3 className="font-semibold text-gray-800 mb-4">
-                  Your Digital Identity
+              <div className="bg-blue-50 rounded-xl p-6 mb-6 border border-blue-200 shadow-inner">
+                <h3 className="font-semibold text-blue-800 mb-4 text-lg">
+                  ✨ Your Digital Identity
                 </h3>
-                <div className="text-sm text-left space-y-2">
-                  <p>
-                    <strong>DID:</strong> {submitResult.did}
-                  </p>
-                  <p>
-                    <strong>Address:</strong> {submitResult.address}
-                  </p>
-                  <p>
-                    <strong>Transaction:</strong>
+                <div className="text-sm text-left space-y-3 text-gray-700">
+                  <div className="flex items-center p-2 bg-white rounded-lg shadow-sm">
+                    <span className="font-semibold text-blue-600 w-20">DID:</span>
+                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded flex-1">{submitResult.did}</span>
+                  </div>
+                  <div className="flex items-center p-2 bg-white rounded-lg shadow-sm">
+                    <span className="font-semibold text-blue-600 w-20">Address:</span>
+                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded flex-1">{submitResult.address}</span>
+                  </div>
+                  <div className="flex items-center p-2 bg-white rounded-lg shadow-sm">
+                    <span className="font-semibold text-blue-600 w-20">Transaction:</span>
                     <a
                       href={submitResult.publishResult.explorerUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-indigo-600 hover:underline ml-1"
+                      className="text-indigo-600 hover:text-indigo-800 underline font-mono text-xs bg-gray-100 px-2 py-1 rounded flex-1 hover:bg-indigo-50 transition-colors"
                     >
                       {submitResult.publishResult.transactionHash}
                     </a>
-                  </p>
-                  <p>
-                    <strong>Credentials:</strong>{" "}
-                    {submitResult.verifiableCredentials.length} types issued
-                  </p>
+                  </div>
+                  <div className="flex items-center p-2 bg-white rounded-lg shadow-sm">
+                    <span className="font-semibold text-blue-600 w-20">Credentials:</span>
+                    <span className="text-green-600 font-semibold">{submitResult.verifiableCredentials.length} types issued</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -441,26 +464,28 @@ const KYCForm = () => {
           {currentStep <= totalSteps && (
             <>
               {/* Progress Indicator */}
-              <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-blue-200">
                 <div className="flex items-center justify-between mb-4">
                   {steps.map((step, index) => (
                     <div key={step.number} className="flex items-center">
                       <div
-                        className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold ${
+                        className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all duration-300 transform ${
                           currentStep >= step.number
-                            ? "bg-indigo-600 text-white"
+                            ? "bg-blue-600 text-white shadow-lg scale-110"
                             : currentStep === step.number
-                            ? "bg-indigo-100 text-indigo-600 border-2 border-indigo-600"
-                            : "bg-gray-200 text-gray-500"
+                            ? "bg-blue-100 text-blue-600 border-2 border-blue-500 shadow-md animate-pulse"
+                            : "bg-gray-200 text-gray-500 hover:bg-gray-300"
                         }`}
                       >
-                        {step.icon}
+                        {currentStep > step.number ? "✓" : step.icon}
                       </div>
-                      <div className="ml-2 hidden md:block">
+                      <div className="ml-3 hidden md:block">
                         <p
-                          className={`text-xs font-medium ${
+                          className={`text-xs font-medium transition-colors duration-300 ${
                             currentStep >= step.number
-                              ? "text-indigo-600"
+                              ? "text-blue-600"
+                              : currentStep === step.number
+                              ? "text-indigo-600 font-semibold"
                               : "text-gray-500"
                           }`}
                         >
@@ -469,9 +494,9 @@ const KYCForm = () => {
                       </div>
                       {index < steps.length - 1 && (
                         <div
-                          className={`w-4 h-0.5 mx-2 ${
+                          className={`w-6 h-1 mx-3 rounded-full transition-all duration-500 ${
                             currentStep > step.number
-                              ? "bg-indigo-600"
+                              ? "bg-blue-600 shadow-sm"
                               : "bg-gray-300"
                           }`}
                         />
@@ -480,22 +505,28 @@ const KYCForm = () => {
                   ))}
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">
-                    Step {currentStep} of {totalSteps}:{" "}
-                    {steps[currentStep - 1]?.title}
+                  <p className="text-sm font-medium text-blue-600">
+                    Step {currentStep} of {totalSteps}: {steps[currentStep - 1]?.title}
                   </p>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                          <div 
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-500 shadow-sm"
+                        style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                      ></div>
+                  </div>
                 </div>
               </div>
 
               {/* Form Content */}
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-blue-200 transform hover:shadow-3xl transition-all duration-300">
                 <form onSubmit={handleSubmit}>
                   <div className="p-8">
                     {/* Step 1: Personal Information */}
                     {currentStep === 1 && (
-                      <>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                          👤 Personal Information
+                      <div className="animate-fade-in">
+                        <h2 className="text-2xl font-bold text-blue-600 mb-6 flex items-center">
+                          <span className="text-3xl mr-3 animate-bounce">👤</span>
+                          Personal Information
                         </h2>
                         <div className="space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -512,7 +543,7 @@ const KYCForm = () => {
                                 name="firstName"
                                 value={formData.firstName}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.firstName && (
                                 <span className="text-red-600 text-sm">
@@ -533,7 +564,7 @@ const KYCForm = () => {
                                 name="lastName"
                                 value={formData.lastName}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.lastName && (
                                 <span className="text-red-600 text-sm">
@@ -557,7 +588,7 @@ const KYCForm = () => {
                                 name="dateOfBirth"
                                 value={formData.dateOfBirth}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.dateOfBirth && (
                                 <span className="text-red-600 text-sm">
@@ -577,7 +608,7 @@ const KYCForm = () => {
                                 name="gender"
                                 value={formData.gender}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               >
                                 <option value="">Select gender</option>
                                 {genderOptions.map((gender) => (
@@ -607,7 +638,7 @@ const KYCForm = () => {
                                 name="nationality"
                                 value={formData.nationality}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               >
                                 <option value="">Select nationality</option>
                                 {countries.map((country) => (
@@ -635,7 +666,7 @@ const KYCForm = () => {
                                 name="placeOfBirth"
                                 value={formData.placeOfBirth}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.placeOfBirth && (
                                 <span className="text-red-600 text-sm">
@@ -659,7 +690,7 @@ const KYCForm = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.email && (
                                 <span className="text-red-600 text-sm">
@@ -680,7 +711,7 @@ const KYCForm = () => {
                                 name="phoneNumber"
                                 value={formData.phoneNumber}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.phoneNumber && (
                                 <span className="text-red-600 text-sm">
@@ -690,14 +721,15 @@ const KYCForm = () => {
                             </div>
                           </div>
                         </div>
-                      </>
+                      </div>
                     )}
 
                     {/* Step 2: Identity Documents */}
                     {currentStep === 2 && (
-                      <>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                          �� Identity Documents
+                      <div className="animate-fade-in">
+                        <h2 className="text-2xl font-bold text-blue-600 mb-6 flex items-center">
+                          <span className="text-3xl mr-3 animate-bounce">🆔</span>
+                          Identity Documents
                         </h2>
                         <div className="space-y-6">
                           <div>
@@ -752,7 +784,7 @@ const KYCForm = () => {
                                 name="documentNumber"
                                 value={formData.documentNumber}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.documentNumber && (
                                 <span className="text-red-600 text-sm">
@@ -775,7 +807,7 @@ const KYCForm = () => {
                               name="identityDocument"
                               onChange={handleInputChange}
                               accept="image/*,.pdf"
-                              className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 cursor-pointer"
+                              className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 cursor-pointer text-black"
                             />
                             {errors.identityDocument && (
                               <span className="text-red-600 text-sm">
@@ -784,7 +816,7 @@ const KYCForm = () => {
                             )}
                           </div>
                         </div>
-                      </>
+                      </div>
                     )}
 
                     {/* Step 3: Address Verification */}
@@ -808,7 +840,7 @@ const KYCForm = () => {
                               value={formData.street}
                               onChange={handleInputChange}
                               placeholder="123 Main Street"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
                             {errors.street && (
                               <span className="text-red-600 text-sm">
@@ -832,7 +864,7 @@ const KYCForm = () => {
                                 value={formData.city}
                                 onChange={handleInputChange}
                                 placeholder="New York"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.city && (
                                 <span className="text-red-600 text-sm">
@@ -854,7 +886,7 @@ const KYCForm = () => {
                                 value={formData.state}
                                 onChange={handleInputChange}
                                 placeholder="NY"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.state && (
                                 <span className="text-red-600 text-sm">
@@ -879,7 +911,7 @@ const KYCForm = () => {
                                 value={formData.postalCode}
                                 onChange={handleInputChange}
                                 placeholder="10001"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.postalCode && (
                                 <span className="text-red-600 text-sm">
@@ -899,7 +931,7 @@ const KYCForm = () => {
                                 name="country"
                                 value={formData.country}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               >
                                 <option value="">Select country</option>
                                 {countries.map((country) => (
@@ -933,7 +965,7 @@ const KYCForm = () => {
                               name="addressDocument"
                               onChange={handleInputChange}
                               accept="image/*,.pdf"
-                              className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 cursor-pointer"
+                              className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 cursor-pointer text-black"
                             />
                             {errors.addressDocument && (
                               <span className="text-red-600 text-sm">
@@ -965,7 +997,7 @@ const KYCForm = () => {
                                 name="incomeRange"
                                 value={formData.incomeRange}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               >
                                 <option value="">Select income range</option>
                                 {incomeRanges.map((range) => (
@@ -993,7 +1025,7 @@ const KYCForm = () => {
                                 name="employmentStatus"
                                 value={formData.employmentStatus}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               >
                                 <option value="">Select status</option>
                                 {employmentStatuses.map((status) => (
@@ -1024,7 +1056,7 @@ const KYCForm = () => {
                                 name="sourceOfFunds"
                                 value={formData.sourceOfFunds}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               >
                                 <option value="">Select source</option>
                                 {sourceOfFundsOptions.map((source) => (
@@ -1054,7 +1086,7 @@ const KYCForm = () => {
                                 value={formData.employer}
                                 onChange={handleInputChange}
                                 placeholder="Company name"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                             </div>
                           </div>
@@ -1075,7 +1107,7 @@ const KYCForm = () => {
                               name="payslip"
                               onChange={handleInputChange}
                               accept="image/*,.pdf"
-                              className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 cursor-pointer"
+                              className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 cursor-pointer text-black"
                             />
                           </div>
                         </div>
@@ -1103,7 +1135,7 @@ const KYCForm = () => {
                               value={formData.cardholderName}
                               onChange={handleInputChange}
                               placeholder="Name as it appears on card"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
                             {errors.cardholderName && (
                               <span className="text-red-600 text-sm">
@@ -1128,7 +1160,7 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 placeholder="1234 5678 9012 3456"
                                 maxLength="19"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.cardNumber && (
                                 <span className="text-red-600 text-sm">
@@ -1150,7 +1182,7 @@ const KYCForm = () => {
                                 value={formData.bankName}
                                 onChange={handleInputChange}
                                 placeholder="Chase, Bank of America, etc."
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.bankName && (
                                 <span className="text-red-600 text-sm">
@@ -1173,7 +1205,7 @@ const KYCForm = () => {
                                 name="cardType"
                                 value={formData.cardType}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               >
                                 {cardTypes.map((type) => (
                                   <option key={type} value={type}>
@@ -1202,7 +1234,7 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 placeholder="MM/YY"
                                 maxLength="5"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.expiryDate && (
                                 <span className="text-red-600 text-sm">
@@ -1225,7 +1257,7 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 placeholder="123"
                                 maxLength="4"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
                               {errors.cvv && (
                                 <span className="text-red-600 text-sm">
@@ -1240,9 +1272,10 @@ const KYCForm = () => {
 
                     {/* Step 6: Consents */}
                     {currentStep === 6 && (
-                      <>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                          ✅ Consents & Declarations
+                      <div className="animate-fade-in">
+                        <h2 className="text-2xl font-bold text-blue-600 mb-6 flex items-center">
+                          <span className="text-3xl mr-3 animate-bounce">✅</span>
+                          Consents & Declarations
                         </h2>
                         <div className="space-y-6">
                           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -1395,44 +1428,54 @@ const KYCForm = () => {
                             </p>
                           </div>
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
 
                   {/* Navigation Buttons */}
-                  <div className="px-8 py-6 bg-gray-50 flex justify-between">
+                  <div className="px-8 py-6 bg-white flex justify-between border-t border-blue-200">
                     <button
                       type="button"
                       onClick={prevStep}
                       disabled={currentStep === 1}
-                      className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                                              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
                         currentStep === 1
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105 shadow-md hover:shadow-lg"
                       }`}
                     >
-                      Previous
+                      ← Previous
                     </button>
 
                     {currentStep < totalSteps ? (
                       <button
                         type="button"
                         onClick={nextStep}
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                        className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                       >
-                        Next
+                        Next →
                       </button>
                     ) : (
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                        className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
                           isSubmitting
                             ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                            : "bg-green-600 text-white hover:bg-green-700"
+                            : "bg-green-600 text-white hover:bg-green-700 hover:scale-105 shadow-lg hover:shadow-xl animate-pulse"
                         }`}
                       >
-                        {isSubmitting ? "Submitting..." : "Submit KYC"}
+                        {isSubmitting ? (
+                          <span className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Submitting...
+                          </span>
+                        ) : (
+                          "🚀 Submit KYC"
+                        )}
                       </button>
                     )}
                   </div>
