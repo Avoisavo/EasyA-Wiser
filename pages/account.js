@@ -36,6 +36,137 @@ export default function Account() {
       : 'wss://s.devnet.rippletest.net:51233/';
   };
 
+  // Get new account from faucet
+  const getNewAccount = async (accountNumber) => {
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults(`===Getting Account===\n\nConnected to ${net}.`);
+      
+      const faucetHost = null;
+      const { wallet } = await client.fundWallet(null, { faucetHost });
+      
+      const newAccountData = {
+        name: accountNumber === 1 ? account1.name : account2.name,
+        address: wallet.address,
+        seed: wallet.seed
+      };
+      
+      if (accountNumber === 1) {
+        setAccount1(newAccountData);
+      } else {
+        setAccount2(newAccountData);
+      }
+      
+      setResults(prev => prev + `\n\nNew account created!\nAddress: ${wallet.address}\nSeed: ${wallet.seed}`);
+      
+    } catch (error) {
+      console.error('Error getting account:', error);
+      setResults(prev => prev + `\n===Error: ${error.message}===\n`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
+  // Get account from seed
+  const getAccountFromSeed = async (accountNumber) => {
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults('===Finding wallet.===\n\n');
+      
+      const seed = accountNumber === 1 ? account1.seed : account2.seed;
+      const wallet = xrpl.Wallet.fromSeed(seed);
+      const address = wallet.address;
+      
+      const updatedAccount = {
+        ...( accountNumber === 1 ? account1 : account2),
+        address: address
+      };
+      
+      if (accountNumber === 1) {
+        setAccount1(updatedAccount);
+      } else {
+        setAccount2(updatedAccount);
+      }
+      
+      setResults(prev => prev + "===Wallet found.===\n\n" + "Account address: " + address + "\n\n");
+      
+    } catch (error) {
+      console.error('Error getting account from seed:', error);
+      setResults(prev => prev + `\nError: ${error.message}\n`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
+  // Get XRP balance
+  const getXrpBalance = async () => {
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults(`\n===Getting XRP balance...===\n\n`);
+      
+      const currentAccount = activeAccount === 'account1' ? account1 : account2;
+      const wallet = xrpl.Wallet.fromSeed(currentAccount.seed);
+      const balance = await client.getXrpBalance(wallet.address);
+      
+      setXrpBalance(balance);
+      setResults(prev => prev + `${currentAccount.name || 'Account'} current XRP balance: ${balance}\n\n`);
+      
+    } catch (error) {
+      console.error('Error getting XRP balance:', error);
+      setResults(prev => prev + `\nError: ${error.message}\n`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
+  // Get token balance
+  const getTokenBalance = async () => {
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults(`===Connected to ${net}.===\n===Getting account token balance...===\n\n`);
+      
+      const currentAccount = activeAccount === 'account1' ? account1 : account2;
+      const wallet = xrpl.Wallet.fromSeed(currentAccount.seed);
+      
+      const balance = await client.request({
+        command: "gateway_balances",
+        account: wallet.address,
+        ledger_index: "validated",
+      });
+      
+      setResults(prev => prev + `${currentAccount.name || 'Account'}'s token balance(s): ${JSON.stringify(balance.result, null, 2)}\n`);
+      
+      const xrpBal = await client.getXrpBalance(wallet.address);
+      setXrpBalance(xrpBal);
+      
+    } catch (error) {
+      console.error('Error getting token balance:', error);
+      setResults(prev => prev + `\nError: ${error.message}\n`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <Head>
@@ -74,7 +205,33 @@ export default function Account() {
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600">Account management coming soon...</p>
+          <p className="text-gray-600">Account UI coming soon...</p>
+          
+          {/* Development testing buttons - will be replaced with proper UI */}
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => getNewAccount(1)}
+              disabled={loading}
+              className="px-3 py-1 bg-blue-500 text-white rounded text-xs disabled:opacity-50"
+            >
+              Test: Get Account 1
+            </button>
+            <button
+              onClick={() => getXrpBalance()}
+              disabled={loading}
+              className="px-3 py-1 bg-green-500 text-white rounded text-xs disabled:opacity-50"
+            >
+              Test: Get Balance
+            </button>
+          </div>
+          
+          {results && (
+            <div className="mt-4">
+              <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+                {results}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
     </div>
