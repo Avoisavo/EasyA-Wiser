@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion';
 import { useCallback } from 'react';
+import { useRouter } from 'next/router';
 import Particles from 'react-tsparticles';
 import { loadSlim } from 'tsparticles-slim';
 import { SmoothCursor } from '../components/ui/smooth-cursor';
 
 export default function LandingPage() {
+  const router = useRouter();
   const particlesInit = useCallback(async (engine) => {
     await loadSlim(engine);
   }, []);
@@ -96,7 +98,10 @@ export default function LandingPage() {
             <p className="text-xl text-gray-700 mb-8">
               Revolutionizing the future of finance with cutting-edge technology
             </p>
-            <button className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105">
+            <button
+              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105"
+              onClick={() => router.push('/nocard')}
+            >
               Get Started
             </button>
           </motion.div>
