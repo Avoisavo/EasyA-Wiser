@@ -180,4 +180,3 @@ For support and questions, please contact the development team.
 
 ---
 
-**Built with ❤️ using Next.js and XRPL**
