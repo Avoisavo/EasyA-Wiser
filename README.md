@@ -57,23 +57,23 @@ The converted USD amount is sent directly to Marqeta, funding the card just-in-t
 
 ## 🛠 Tech Stack
 
-- **UI**  
-  - Next.js  
-  - Tailwind CSS 
-  - Phantom Wallet
+### 🌐 Frontend
+- **Next.js** – User interface and onboarding flows  
+- **Tailwind CSS** – Responsive and modern UI components  
+- **Crossmart Wallet** – XRPL wallet integration
 
-- **Card Issuance & Payments**  
-  - Marqeta API for card provisioning  
-  - Visa Network integration for global acceptance
+### 🔗 Blockchain & Crypto
+- **XRP Ledger (XRPL)** – Wallet integration, and real-time pathfinding for crypto-to-fiat conversion  
+- **XRPL Pathfinding** – identifies the most cost-effective route for payments converting to USD 
+- **Decentralized Identifiers (DIDs)** – On-chain identity tied to user identity
 
-- **Platform Treasury**  
-  - **Finance Layer**: Off-chain bank account integrations  
-  - **Blockchain Layer**:  
-    - Solana program vaults  
-    - Automated rebalancing engine (Python)
+### 💳 Payments & Card Issuance
+- **Marqeta Sandbox API** – Issues virtual debit cards, manages card lifecycle and payment flow  
+- **Visa (PCI Tokenization)** – Secure card token input, ensuring PCI-compliant card detail handling
 
-- **Oracles & Conversion**  
-  - Pyth Network for live fiat⇄crypto price feeds
+### 🖥 Backend
+- **Node.js / Express** – RESTful API and server logic   
+- **Web3 Libraries** – Wallet signing, transaction processing, XRPL operations
 
 ---
 
