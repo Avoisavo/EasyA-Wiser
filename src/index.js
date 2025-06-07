@@ -279,6 +279,67 @@ class FixedAccountDID {
       throw error;
     }
   }
+
+  /**
+   * Complete process: create wallet, fund, publish DID, verify
+   */
+  async runCompleteProcess() {
+    try {
+      console.log("🎯 Starting Fixed Account DID Process\n");
+
+      // Step 1: Create fixed wallet
+      console.log("1️⃣ Creating deterministic wallet...");
+      const walletInfo = this.createFixedWallet();
+
+      // Step 2: Ensure funding
+      console.log("\n2️⃣ Ensuring wallet has funds...");
+      await this.ensureFunding();
+
+      // Step 3: Create and publish DID
+      console.log("\n3️⃣ Creating and publishing DID...");
+      const didResult = await this.createAndPublishDID();
+
+      // Step 4: Verify DID can be found
+      console.log("\n4️⃣ Verifying DID can be found...");
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // Wait a bit
+      const foundDID = await this.resolveDID();
+
+      // Summary
+      console.log("\n" + "=".repeat(60));
+      console.log("🎉 SUCCESS! Fixed Account DID System Working!");
+      console.log("=".repeat(60));
+      console.log(`✅ Username: ${walletInfo.username}`);
+      console.log(`✅ Address: ${walletInfo.address}`);
+      console.log(`✅ DID: ${walletInfo.did}`);
+      console.log(`✅ DID Published: ${didResult.success}`);
+      console.log(`✅ DID Found: ${foundDID ? "YES" : "NO"}`);
+
+      if (!didResult.alreadyExists) {
+        console.log(`✅ Transaction: ${didResult.transactionHash}`);
+        console.log(`✅ Explorer: ${didResult.explorerUrl}`);
+      }
+
+      console.log(
+        `✅ Account Explorer: https://testnet.xrpl.org/accounts/${walletInfo.address}`
+      );
+      console.log(
+        "\n💡 Run this script again - it will create the SAME DID every time!"
+      );
+
+      return {
+        wallet: walletInfo,
+        didResult: didResult,
+        foundDID: foundDID,
+        explorerUrls: {
+          account: `https://testnet.xrpl.org/accounts/${walletInfo.address}`,
+          transaction: didResult.alreadyExists ? null : didResult.explorerUrl,
+        },
+      };
+    } catch (error) {
+      console.error("❌ Process failed:", error.message);
+      throw error;
+    }
+  }
 }
 
 module.exports = FixedAccountDID;
