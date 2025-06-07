@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import ConnectWallet from "../components/connectwallet";
 import { useWallet } from '../contexts/WalletContext';
 
 const KYCForm = () => {
+  const router = useRouter();
   // Header state
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const { isConnected, walletAddress, walletType, disconnect } = useWallet();
@@ -499,6 +501,18 @@ const KYCForm = () => {
                     <span className="font-semibold text-blue-600 w-20">Credentials:</span>
                     <span className="text-green-600 font-semibold">{submitResult.verifiableCredentials.length} types issued</span>
                   </div>
+                </div>
+
+                {/* Generate Debit Card Button */}
+                <div className="mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => router.push('/create')}
+                    className="w-full px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl font-semibold text-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300 flex items-center justify-center space-x-3"
+                  >
+                    <span>💳 Generate Debit Card</span>
+                  </motion.button>
                 </div>
               </div>
             </div>
