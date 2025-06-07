@@ -118,6 +118,55 @@ export default function AMM() {
     }
   };
 
+  // Create trust line
+  const createTrustLine = async () => {
+    if (!trustlineLimit || !destination || !currency) {
+      alert('Please fill in all trust line fields');
+      return;
+    }
+    
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults(`===Creating Trust Line===\n\nConnected to ${net}.`);
+      
+      const standby_wallet = xrpl.Wallet.fromSeed(standbyAccount.seed);
+      
+      const trustSet = {
+        TransactionType: "TrustSet",
+        Account: standby_wallet.address,
+        LimitAmount: {
+          currency: currency,
+          issuer: destination,
+          value: trustlineLimit
+        }
+      };
+      
+      const prepared = await client.autofill(trustSet);
+      const signed = standby_wallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      
+      if (result.result.meta.TransactionResult == "tesSUCCESS") {
+        setResults(prev => prev + `\n\nTrust line created successfully!`);
+        setResults(prev => prev + `\nLimit: ${trustlineLimit}`);
+        setResults(prev => prev + `\nCurrency: ${currency}`);
+        setResults(prev => prev + `\nIssuer: ${destination}`);
+      } else {
+        setResults(prev => prev + `\n\nError creating trust line: ${result.result.meta.TransactionResult}`);
+      }
+      
+    } catch (error) {
+      console.error('Error creating trust line:', error);
+      setResults(prev => prev + `\n\nError: ${error.message}`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <Head>
@@ -155,44 +204,173 @@ export default function AMM() {
           </div>
         </div>
 
-        {/* Testing Buttons - Basic account creation testing */}
+        {/* Account Management */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Standby Account */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">Standby Account</h3>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => getNewAccount('standby')}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                >
+                  Get New Standby Account
+                </button>
+                <button
+                  onClick={() => getAccountFromSeed('standby')}
+                  disabled={loading}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                >
+                  Get Account From Seed
+                </button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Standby Account Name</label>
+                <input
+                  type="text"
+                  value={standbyAccount.name}
+                  onChange={(e) => setStandbyAccount({...standbyAccount, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter a name for standby account"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Standby Account Address</label>
+                <input
+                  type="text"
+                  value={standbyAccount.address}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Standby Account Seed</label>
+                <input
+                  type="text"
+                  value={standbyAccount.seed}
+                  onChange={(e) => setStandbyAccount({...standbyAccount, seed: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter or paste seed"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Operational Account */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">Operational Account</h3>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => getNewAccount('operational')}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                >
+                  Get New Operational Account
+                </button>
+                <button
+                  onClick={() => getAccountFromSeed('operational')}
+                  disabled={loading}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                >
+                  Get Account From Seed
+                </button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Operational Account Name</label>
+                <input
+                  type="text"
+                  value={operationalAccount.name}
+                  onChange={(e) => setOperationalAccount({...operationalAccount, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter a name for operational account"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Operational Account Address</label>
+                <input
+                  type="text"
+                  value={operationalAccount.address}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Operational Account Seed</label>
+                <input
+                  type="text"
+                  value={operationalAccount.seed}
+                  onChange={(e) => setOperationalAccount({...operationalAccount, seed: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter or paste seed"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Line Creation */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">Test Account Functions</h3>
-          <div className="flex gap-4 flex-wrap">
+          <h3 className="text-lg font-semibold mb-4">Create Trust Line</h3>
+          <p className="text-gray-600 mb-4">Create a trust line from the standby account to the operational account for issued tokens.</p>
+          
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Trust Line Limit</label>
+              <input
+                type="text"
+                value={trustlineLimit}
+                onChange={(e) => setTrustlineLimit(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                placeholder="e.g., 10000"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Issuer Address (Operational)</label>
+              <input
+                type="text"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                placeholder="Operational account address"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Currency Code</label>
+              <input
+                type="text"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                placeholder="e.g., TST"
+              />
+            </div>
+          </div>
+          
+          <div className="mt-4">
             <button
-              onClick={() => getNewAccount('standby')}
+              onClick={createTrustLine}
               disabled={loading}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+              className="px-6 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
             >
-              Get New Standby Account
-            </button>
-            <button
-              onClick={() => getNewAccount('operational')}
-              disabled={loading}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-            >
-              Get New Operational Account
-            </button>
-            <button
-              onClick={() => getAccountFromSeed('standby')}
-              disabled={loading}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-            >
-              Get Standby From Seed
-            </button>
-            <button
-              onClick={() => getAccountFromSeed('operational')}
-              disabled={loading}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-            >
-              Get Operational From Seed
+              Create Trust Line
             </button>
           </div>
         </div>
 
-        {/* Content will be added in subsequent commits */}
+        {/* Placeholder for next features */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-center">Account management UI coming next...</p>
+          <p className="text-gray-600 text-center">Token issuing functionality coming next...</p>
         </div>
       </div>
     </div>
