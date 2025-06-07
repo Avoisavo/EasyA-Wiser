@@ -419,6 +419,97 @@ export default function AMM() {
     }
   };
 
+  // Convenience functions for better UX
+  const autofillOperationalAddress = () => {
+    if (operationalAccount.address) {
+      setDestination(operationalAccount.address);
+    }
+  };
+
+  const autofillStandbyAddress = () => {
+    if (standbyAccount.address) {
+      setDestination(standbyAccount.address);
+    }
+  };
+
+  const autofillAssetIssuer = (assetNumber) => {
+    if (operationalAccount.address) {
+      if (assetNumber === 1) {
+        setAsset1Issuer(operationalAccount.address);
+      } else {
+        setAsset2Issuer(operationalAccount.address);
+      }
+    }
+  };
+
+  const clearTrustLineForm = () => {
+    setTrustlineLimit('');
+    setDestination('');
+    setCurrency('');
+  };
+
+  const clearTokenForm = () => {
+    setAmount('');
+    setDestination('');
+    setCurrency('');
+  };
+
+  const clearAMMForm = () => {
+    setAsset1Currency('');
+    setAsset1Issuer('');
+    setAsset1Amount('');
+    setAsset2Currency('');
+    setAsset2Issuer('');
+    setAsset2Amount('');
+  };
+
+  const setupXRPTokenPair = () => {
+    setAsset1Currency('XRP');
+    setAsset1Issuer('');
+    setAsset2Currency('TST');
+    setAsset2Issuer(operationalAccount.address);
+  };
+
+  const gatherAccountInfo = () => {
+    const accountData = `Standby Account:\n${standbyAccount.name}\n${standbyAccount.address}\n${standbyAccount.seed}\n\nOperational Account:\n${operationalAccount.name}\n${operationalAccount.address}\n${operationalAccount.seed}`;
+    setResults(accountData);
+  };
+
+  const distributeAccountInfo = () => {
+    const lines = results.split('\n').filter(line => line.trim() !== '');
+    const standbyIndex = lines.findIndex(line => line.includes('Standby Account:'));
+    const operationalIndex = lines.findIndex(line => line.includes('Operational Account:'));
+    
+    if (standbyIndex !== -1 && standbyIndex + 3 < lines.length) {
+      setStandbyAccount({
+        name: lines[standbyIndex + 1] || '',
+        address: lines[standbyIndex + 2] || '',
+        seed: lines[standbyIndex + 3] || ''
+      });
+    }
+    
+    if (operationalIndex !== -1 && operationalIndex + 3 < lines.length) {
+      setOperationalAccount({
+        name: lines[operationalIndex + 1] || '',
+        address: lines[operationalIndex + 2] || '',
+        seed: lines[operationalIndex + 3] || ''
+      });
+    }
+  };
+
+  // Auto-populate fields when accounts change
+  useEffect(() => {
+    // Auto-populate asset issuers when operational account is available
+    if (operationalAccount.address) {
+      if (asset1Currency && asset1Currency !== 'XRP' && !asset1Issuer) {
+        setAsset1Issuer(operationalAccount.address);
+      }
+      if (asset2Currency && asset2Currency !== 'XRP' && !asset2Issuer) {
+        setAsset2Issuer(operationalAccount.address);
+      }
+    }
+  }, [operationalAccount.address, asset1Currency, asset2Currency]);
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <Head>
@@ -588,13 +679,23 @@ export default function AMM() {
             
             <div>
               <label className="block text-sm font-medium mb-1">Issuer Address (Operational)</label>
-              <input
-                type="text"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                placeholder="Operational account address"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Operational account address"
+                />
+                <button
+                  onClick={autofillOperationalAddress}
+                  disabled={!operationalAccount.address}
+                  className="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 text-sm"
+                  title="Auto-fill operational address"
+                >
+                  Auto
+                </button>
+              </div>
             </div>
             
             <div>
@@ -609,13 +710,19 @@ export default function AMM() {
             </div>
           </div>
           
-          <div className="mt-4">
+          <div className="flex gap-2 mt-4">
             <button
               onClick={createTrustLine}
               disabled={loading}
               className="px-6 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
             >
               Create Trust Line
+            </button>
+            <button
+              onClick={clearTrustLineForm}
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            >
+              Clear
             </button>
           </div>
         </div>
@@ -649,13 +756,23 @@ export default function AMM() {
             
             <div>
               <label className="block text-sm font-medium mb-1">Destination (Standby)</label>
-              <input
-                type="text"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                placeholder="Standby account address"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Standby account address"
+                />
+                <button
+                  onClick={autofillStandbyAddress}
+                  disabled={!standbyAccount.address}
+                  className="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 text-sm"
+                  title="Auto-fill standby address"
+                >
+                  Auto
+                </button>
+              </div>
             </div>
             
             <div>
@@ -670,13 +787,19 @@ export default function AMM() {
             </div>
           </div>
           
-          <div className="mt-4">
+          <div className="flex gap-2 mt-4">
             <button
               onClick={issueTokens}
               disabled={loading}
               className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
             >
               Send Currency (Issue Tokens)
+            </button>
+            <button
+              onClick={clearTokenForm}
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            >
+              Clear
             </button>
           </div>
         </div>
@@ -685,6 +808,22 @@ export default function AMM() {
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h3 className="text-lg font-semibold mb-4">AMM Management</h3>
           <p className="text-gray-600 mb-4">Check for existing AMM pairs and create new AMM pools.</p>
+          
+          <div className="mb-4">
+            <button
+              onClick={setupXRPTokenPair}
+              disabled={!operationalAccount.address}
+              className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50 mr-2"
+            >
+              Setup XRP/TST Pair
+            </button>
+            <button
+              onClick={clearAMMForm}
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            >
+              Clear AMM Form
+            </button>
+          </div>
           
           <div className="grid md:grid-cols-2 gap-6">
             {/* Asset 1 */}
@@ -704,14 +843,24 @@ export default function AMM() {
               
               <div>
                 <label className="block text-sm font-medium mb-1">Issuer (if not XRP)</label>
-                <input
-                  type="text"
-                  value={asset1Issuer}
-                  onChange={(e) => setAsset1Issuer(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  placeholder="Issuer address"
-                  disabled={asset1Currency === 'XRP'}
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={asset1Issuer}
+                    onChange={(e) => setAsset1Issuer(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    placeholder="Issuer address"
+                    disabled={asset1Currency === 'XRP'}
+                  />
+                  <button
+                    onClick={() => autofillAssetIssuer(1)}
+                    disabled={!operationalAccount.address || asset1Currency === 'XRP'}
+                    className="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 text-sm"
+                    title="Auto-fill operational address"
+                  >
+                    Auto
+                  </button>
+                </div>
               </div>
               
               <div>
@@ -743,14 +892,24 @@ export default function AMM() {
               
               <div>
                 <label className="block text-sm font-medium mb-1">Issuer (if not XRP)</label>
-                <input
-                  type="text"
-                  value={asset2Issuer}
-                  onChange={(e) => setAsset2Issuer(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  placeholder="Issuer address"
-                  disabled={asset2Currency === 'XRP'}
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={asset2Issuer}
+                    onChange={(e) => setAsset2Issuer(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    placeholder="Issuer address"
+                    disabled={asset2Currency === 'XRP'}
+                  />
+                  <button
+                    onClick={() => autofillAssetIssuer(2)}
+                    disabled={!operationalAccount.address || asset2Currency === 'XRP'}
+                    className="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 text-sm"
+                    title="Auto-fill operational address"
+                  >
+                    Auto
+                  </button>
+                </div>
               </div>
               
               <div>
@@ -784,6 +943,26 @@ export default function AMM() {
           </div>
         </div>
 
+        {/* Account Info Management */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Account Information Management</h3>
+          <p className="text-gray-600 mb-4">Save and restore account information for future sessions.</p>
+          <div className="flex gap-4 mb-4">
+            <button
+              onClick={gatherAccountInfo}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Gather Account Info
+            </button>
+            <button
+              onClick={distributeAccountInfo}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Distribute Account Info
+            </button>
+          </div>
+        </div>
+
         {/* Results and AMM Info */}
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           {/* Results */}
@@ -792,10 +971,16 @@ export default function AMM() {
             <textarea
               value={results}
               onChange={(e) => setResults(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              rows={12}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 font-mono text-sm"
+              rows={15}
               placeholder="Transaction results will appear here..."
             />
+            <button
+              onClick={() => setResults('')}
+              className="mt-2 px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm"
+            >
+              Clear Results
+            </button>
           </div>
           
           {/* AMM Info */}
@@ -804,10 +989,16 @@ export default function AMM() {
             <textarea
               value={ammInfo}
               onChange={(e) => setAmmInfo(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              rows={12}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 font-mono text-sm"
+              rows={15}
               placeholder="AMM information will appear here..."
             />
+            <button
+              onClick={() => setAmmInfo('')}
+              className="mt-2 px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm"
+            >
+              Clear AMM Info
+            </button>
           </div>
         </div>
 
