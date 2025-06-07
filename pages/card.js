@@ -9,7 +9,7 @@ export default function CardPage() {
 
   useEffect(() => {
     // This code runs only on the client-side
-    const storedData = sessionStorage.getItem('newCardDetails');
+    const storedData = localStorage.getItem('newCardDetails');
     if (storedData) {
       setCardData(JSON.parse(storedData));
       // Optional: remove the data from session storage after reading it
