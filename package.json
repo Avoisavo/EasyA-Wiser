@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@crossmarkio/sdk": "^0.4.0",
     "framer-motion": "^12.16.0",
     "next": "15.3.3",
     "react": "^19.0.0",

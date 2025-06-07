@@ -1,6 +1,29 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import ConnectWallet from './connectwallet';
 
 export default function Header() {
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [connectedWallet, setConnectedWallet] = useState(null);
+
+  const handleSelectWallet = (walletType, address) => {
+    setConnectedWallet({
+      type: walletType,
+      address: address
+    });
+    setWalletModalOpen(false);
+  };
+
+  const handleDisconnect = () => {
+    setConnectedWallet(null);
+  };
+
+  // Function to truncate wallet address for display
+  const truncateAddress = (address) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/70 border-b border-blue-100">
       <div className="container mx-auto px-4 py-4">
@@ -37,30 +60,71 @@ export default function Header() {
             Generate a Card
           </motion.button>
 
-          {/* Right side - Connect Wallet Button */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-6 py-2 rounded-full border border-blue-200 bg-white/80 text-blue-700 font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center space-x-2"
-          >
-            <svg
-              className="w-5 h-5 text-blue-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+          {/* Right side - Connect Wallet Button or Connected Address */}
+          {!connectedWallet ? (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-2 rounded-full border border-blue-200 bg-white/80 text-blue-700 font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center space-x-2"
+              onClick={() => setWalletModalOpen(true)}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-            <span>Connect Wallet</span>
-          </motion.button>
+              <svg
+                className="w-5 h-5 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              <span>Connect Wallet</span>
+            </motion.button>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <div className="px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-medium flex items-center space-x-2">
+                <img 
+                  src={connectedWallet.type === 'crossmart' ? "/crossmart.png" : "/fox.png"} 
+                  alt={connectedWallet.type} 
+                  className="w-5 h-5"
+                />
+                <span>{truncateAddress(connectedWallet.address)}</span>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDisconnect}
+                className="p-2 rounded-full hover:bg-red-50 text-red-500 transition-colors"
+                title="Disconnect Wallet"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </motion.button>
+            </div>
+          )}
         </div>
       </div>
+      <ConnectWallet
+        open={walletModalOpen}
+        onClose={() => setWalletModalOpen(false)}
+        onSelectWallet={handleSelectWallet}
+      />
     </header>
   );
 }
