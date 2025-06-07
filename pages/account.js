@@ -167,6 +167,58 @@ export default function Account() {
     }
   };
 
+  // Send XRP
+  const sendXrp = async () => {
+    if (!amount || !destination) {
+      alert('Please enter amount and destination');
+      return;
+    }
+    
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults(`===Sending XRP...===\n\n`);
+      
+      const currentAccount = activeAccount === 'account1' ? account1 : account2;
+      const wallet = xrpl.Wallet.fromSeed(currentAccount.seed);
+      
+      const prepared = await client.autofill({
+        TransactionType: "Payment",
+        Account: wallet.address,
+        Amount: xrpl.xrpToDrops(amount),
+        Destination: destination,
+      });
+      
+      const signed = wallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      
+      setResults(prev => prev + `Transaction result: ${result.result.meta.TransactionResult}\n`);
+      setResults(prev => prev + `Balance changes: ${JSON.stringify(result.result.meta.AffectedNodes, null, 2)}\n`);
+      
+      // Update balance after sending
+      await getXrpBalance();
+      
+    } catch (error) {
+      console.error('Error sending XRP:', error);
+      setResults(prev => prev + `\nError: ${error.message}\n`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
+  // Update active account display when selection changes
+  useEffect(() => {
+    if ((activeAccount === 'account1' && account1.seed) || (activeAccount === 'account2' && account2.seed)) {
+      getXrpBalance();
+    }
+  }, [activeAccount]);
+
+  const currentAccount = activeAccount === 'account1' ? account1 : account2;
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <Head>
@@ -317,8 +369,132 @@ export default function Account() {
           </div>
         </div>
 
+        {/* Transaction Panel */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Send XRP Transaction</h3>
+          
+          {/* Account Selection */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">Select Active Account:</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="account1"
+                  checked={activeAccount === 'account1'}
+                  onChange={(e) => setActiveAccount(e.target.value)}
+                  className="w-4 h-4"
+                />
+                <span>Account 1</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="account2"
+                  checked={activeAccount === 'account2'}
+                  onChange={(e) => setActiveAccount(e.target.value)}
+                  className="w-4 h-4"
+                />
+                <span>Account 2</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Account Name</label>
+                <input
+                  type="text"
+                  value={currentAccount.name}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Account Address</label>
+                <input
+                  type="text"
+                  value={currentAccount.address}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Account Seed</label>
+                <input
+                  type="text"
+                  value={currentAccount.seed}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">XRP Balance</label>
+                <input
+                  type="text"
+                  value={xrpBalance}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Amount (XRP)</label>
+                <input
+                  type="text"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter amount to send"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Destination Address</label>
+                <input
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter destination address"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={sendXrp}
+                  disabled={loading}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                >
+                  Send XRP
+                </button>
+                <button
+                  onClick={getXrpBalance}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                >
+                  Get XRP Balance
+                </button>
+                <button
+                  onClick={getTokenBalance}
+                  disabled={loading}
+                  className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
+                >
+                  Get Token Balance
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600">Transaction interface coming soon...</p>
+          <p className="text-gray-600">Account info management coming soon...</p>
           
           {results && (
             <div className="mt-4">
