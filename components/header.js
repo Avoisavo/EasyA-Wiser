@@ -43,13 +43,15 @@ export default function Header() {
 
           {/* Middle - Navigation Buttons */}
           <div className="flex items-center space-x-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300"
-            >
-              Generate a Card
-            </motion.button>
+            <Link href="/create">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300"
+              >
+                Generate a Card
+              </motion.button>
+            </Link>
             
             <Link href="/kyc-form">
               <motion.button
