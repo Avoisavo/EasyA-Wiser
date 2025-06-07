@@ -6,7 +6,7 @@ const KYCForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState(null);
-  const totalSteps = 6;
+  const totalSteps = 5;
 
   const [formData, setFormData] = useState({
     // Personal Information - aligned with backend
@@ -40,14 +40,6 @@ const KYCForm = () => {
     sourceOfFunds: "",
     employer: "",
     payslip: null,
-
-    // Debit Card Information - aligned with backend
-    cardholderName: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    bankName: "",
-    cardType: "debit",
 
     // Consents - aligned with backend
     dataProcessing: false,
@@ -221,17 +213,7 @@ const KYCForm = () => {
           newErrors.sourceOfFunds = "Source of funds is required";
         break;
 
-      case 5: // Debit Card
-        if (!formData.cardholderName.trim())
-          newErrors.cardholderName = "Cardholder name is required";
-        if (!formData.cardNumber.replace(/\s/g, ""))
-          newErrors.cardNumber = "Card number is required";
-        if (!formData.bankName.trim())
-          newErrors.bankName = "Bank name is required";
-        if (!formData.cardType) newErrors.cardType = "Card type is required";
-        break;
-
-      case 6: // Consents
+      case 5: // Consents
         if (!formData.dataProcessing)
           newErrors.dataProcessing = "Data processing consent is required";
         if (!formData.kycVerification)
@@ -371,8 +353,7 @@ const KYCForm = () => {
     { number: 2, title: "Identity Documents", icon: "🆔" },
     { number: 3, title: "Address Verification", icon: "🏠" },
     { number: 4, title: "Financial Information", icon: "💰" },
-    { number: 5, title: "Payment Method", icon: "💳" },
-    { number: 6, title: "Consents", icon: "✅" },
+    { number: 5, title: "Consents", icon: "✅" },
   ];
 
   return (
@@ -1114,164 +1095,8 @@ const KYCForm = () => {
                       </>
                     )}
 
-                    {/* Step 5: Payment Method */}
+                    {/* Step 5: Consents */}
                     {currentStep === 5 && (
-                      <>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                          💳 Payment Method
-                        </h2>
-                        <div className="space-y-6">
-                          <div>
-                            <label
-                              htmlFor="cardholderName"
-                              className="block text-sm font-medium text-gray-700 mb-2"
-                            >
-                              Cardholder Name *
-                            </label>
-                            <input
-                              type="text"
-                              id="cardholderName"
-                              name="cardholderName"
-                              value={formData.cardholderName}
-                              onChange={handleInputChange}
-                              placeholder="Name as it appears on card"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                            />
-                            {errors.cardholderName && (
-                              <span className="text-red-600 text-sm">
-                                {errors.cardholderName}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                              <label
-                                htmlFor="cardNumber"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                Card Number *
-                              </label>
-                              <input
-                                type="text"
-                                id="cardNumber"
-                                name="cardNumber"
-                                value={formData.cardNumber}
-                                onChange={handleInputChange}
-                                placeholder="1234 5678 9012 3456"
-                                maxLength="19"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              />
-                              {errors.cardNumber && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.cardNumber}
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <label
-                                htmlFor="bankName"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                Bank Name *
-                              </label>
-                              <input
-                                type="text"
-                                id="bankName"
-                                name="bankName"
-                                value={formData.bankName}
-                                onChange={handleInputChange}
-                                placeholder="Chase, Bank of America, etc."
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              />
-                              {errors.bankName && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.bankName}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                              <label
-                                htmlFor="cardType"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                Card Type *
-                              </label>
-                              <select
-                                id="cardType"
-                                name="cardType"
-                                value={formData.cardType}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              >
-                                {cardTypes.map((type) => (
-                                  <option key={type} value={type}>
-                                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                                  </option>
-                                ))}
-                              </select>
-                              {errors.cardType && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.cardType}
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <label
-                                htmlFor="expiryDate"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                Expiry Date *
-                              </label>
-                              <input
-                                type="text"
-                                id="expiryDate"
-                                name="expiryDate"
-                                value={formData.expiryDate}
-                                onChange={handleInputChange}
-                                placeholder="MM/YY"
-                                maxLength="5"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              />
-                              {errors.expiryDate && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.expiryDate}
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <label
-                                htmlFor="cvv"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                CVV *
-                              </label>
-                              <input
-                                type="password"
-                                id="cvv"
-                                name="cvv"
-                                value={formData.cvv}
-                                onChange={handleInputChange}
-                                placeholder="123"
-                                maxLength="4"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              />
-                              {errors.cvv && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.cvv}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Step 6: Consents */}
-                    {currentStep === 6 && (
                       <div className="animate-fade-in">
                         <h2 className="text-2xl font-bold text-blue-600 mb-6 flex items-center">
                           <span className="text-3xl mr-3 animate-bounce">✅</span>
