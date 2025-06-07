@@ -11,8 +11,8 @@ async function runPathfinding() {
 
         // Initialize the wallets
         // The source and destination address can be the same, you will now effectively swap between a currency pair
-        const sourceWallet = Wallet.fromSeed("sEdSqjK1mn9sJsN911cbboYutMmWxjp");  // Replace with your source wallet seed
-        const destinationWallet = Wallet.fromSeed("sEdVHeKwQuQctrb6pUm6JomHpTxcGfU");  // Replace with your destination wallet seed
+        const sourceWallet = Wallet.fromSeed(process.env.SOURCE_WALLET_SEED);  // Replace with your source wallet seed
+        const destinationWallet = Wallet.fromSeed(process.env.DESTINATION_WALLET_SEED);  // Replace with your destination wallet seed
 
         console.log("Source Wallet Address:", sourceWallet.classicAddress);
         console.log("Destination Wallet Address:", destinationWallet.classicAddress);
