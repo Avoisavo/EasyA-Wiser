@@ -14,7 +14,11 @@
     "lucide-react": "^0.513.0",
     "next": "15.3.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "framer-motion": "^12.16.0",
+    "react-tsparticles": "^2.12.2",
+    "tsparticles": "^3.8.1",
+    "tsparticles-slim": "^2.12.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
