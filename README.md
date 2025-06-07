@@ -1,40 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 💳 Wiser – XRPL-Powered Payment Infrastructure
 
-## Getting Started
+**Wiser** is a decentralized payment infrastructure built on the **XRP Ledger (XRPL)** that empowers users to spend their crypto assets like cash without losing custody. By combining **DIDs**, **on-chain KYC**, **XRPL pathfinding**, and the **Marqeta sandbox API**, users can generate a fully-functional **debit card** without needing to pre-fund it.
 
-First, run the development server:
+Wiser gives users seamless and cost-effective access to real-world payments using their crypto holdings.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 💡 Inspiration
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+Our team constantly juggle between fiat and crypto, and we were inspired by the inefficiencies and centralization in most Web3-to-fiat bridges:
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+1. **Crypto enthusiasts** can’t swipe at most merchants without off-ramp hassles.  
+2. Why must users **preload a custodial** wallet to spend crypto?  
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+> “What if spending crypto felt exactly like swiping a debit card while the conversion happened seamlessly in the background?”  
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+That question sparked Wiser.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ❗ Problem Statement
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+> Most crypto-backed debit cards require users to **pre-fund** fiat into a separate account or custodial wallet. This results in:
+- Loss of user custody and control
+- Centralized risk and delayed transactions
+- Broken user experience that feels disconnected from the real-time, on-chain world
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🔑 The Solution
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Seamless Bridging** – seamless transfers from crypto to fiat.  
+- **0 Pre-funding, 0 Staking** – no upfront capital lock ups or staking required.  
+- **Truly Self-Custody** – users always retain full control of their funds.  
+- **Global from Day One** – can instantly pefrom transactions.  
+- **Transparent On-Chain Settlement** – every transaction is auditable on the blockchain.    
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+---
+
+## ⚙️ How Our Project Works
+
+1. **Connect Wallet**  
+   User connects their Crossmart wallet to Wiser’s platform.  
+2. **KYC & DID Creation**  
+   User have to complete KYC and generate a Decentralized Identifier (DID) on chain.  
+3. **Request Debit Card**  
+   User requests a virtual debit card generated from their wallet address, issued via the Marqeta sandbox API. 
+4. **Initiate Payment at Merchant**
+   User makes a purchase using the debit card at a regular merchant.
+5. **Pathfinding & Conversion**
+   Wiser triggers XRPL’s pathfinding algorithm to find the most efficient route to convert the selected token (FT) into USD.
+6. **Just-in-Time Funding**
+The converted USD amount is sent directly to Marqeta, funding the card just-in-time to complete the payment.
+
+---
+
+## 🛠 Tech Stack
+
+- **UI**  
+  - Next.js  
+  - Tailwind CSS 
+  - Phantom Wallet
+
+- **Card Issuance & Payments**  
+  - Marqeta API for card provisioning  
+  - Visa Network integration for global acceptance
+
+- **Platform Treasury**  
+  - **Finance Layer**: Off-chain bank account integrations  
+  - **Blockchain Layer**:  
+    - Solana program vaults  
+    - Automated rebalancing engine (Python)
+
+- **Oracles & Conversion**  
+  - Pyth Network for live fiat⇄crypto price feeds
+
+---
+
