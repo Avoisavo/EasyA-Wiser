@@ -2,26 +2,54 @@ import React, { useState } from "react";
 
 const KYCForm = () => {
   const [formData, setFormData] = useState({
-    fullName: "",
+    // Personal Information - aligned with backend
+    firstName: "",
+    lastName: "",
     dateOfBirth: "",
     nationality: "",
-    countryOfResidence: "",
     phoneNumber: "",
     email: "",
-    occupation: "",
+    gender: "",
+    placeOfBirth: "",
+    occupation: "", // Optional field for UI, not used in backend personal info
+
+    // Identity Document - aligned with backend
     identityDocType: "",
     identityDocument: null,
+    documentNumber: "",
+    issueDate: "",
+    expiryDate: "",
+    issuingAuthority: "",
+
+    // Address Information - aligned with backend
+    street: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "",
     addressDocument: null,
+
+    // Financial Information - aligned with backend
     incomeRange: "",
     employmentStatus: "",
+    sourceOfFunds: "",
+    employer: "",
     payslip: null,
+
+    // Debit Card Information - aligned with backend
     cardholderName: "",
     cardNumber: "",
     expiryDate: "",
     cvv: "",
-    billingAddress: "",
-    dataProcessingConsent: false,
-    dataSharingConsent: false,
+    bankName: "",
+    cardType: "debit",
+
+    // Consents - aligned with backend
+    dataProcessing: false,
+    kycVerification: false,
+    dataSharing: false,
+    termsOfService: false,
+    privacyPolicy: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -47,20 +75,34 @@ const KYCForm = () => {
   ];
 
   const incomeRanges = [
-    "< $20,000",
-    "$20,000 - $50,000",
-    "$50,000 - $100,000",
-    "$100,000 - $200,000",
-    "$200,000+",
+    "0-20000",
+    "20000-50000",
+    "50000-75000",
+    "75000-100000",
+    "100000-200000",
+    "200000+",
   ];
 
   const employmentStatuses = [
-    "Employed",
-    "Self-employed",
-    "Student",
-    "Unemployed",
-    "Retired",
+    "employed",
+    "self-employed",
+    "student",
+    "unemployed",
+    "retired",
   ];
+
+  const genderOptions = ["male", "female", "other", "prefer-not-to-say"];
+
+  const sourceOfFundsOptions = [
+    "salary",
+    "business-income",
+    "investments",
+    "inheritance",
+    "savings",
+    "other",
+  ];
+
+  const cardTypes = ["debit", "credit"];
 
   const formatCardNumber = (value) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -118,54 +160,160 @@ const KYCForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+
+    // Personal Information validation - aligned with backend requirements
+    if (!formData.firstName.trim())
+      newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
     if (!formData.dateOfBirth)
       newErrors.dateOfBirth = "Date of birth is required";
     if (!formData.nationality)
       newErrors.nationality = "Nationality is required";
-    if (!formData.countryOfResidence)
-      newErrors.countryOfResidence = "Country of residence is required";
     if (!formData.phoneNumber.trim())
       newErrors.phoneNumber = "Phone number is required";
     if (!formData.email.trim()) newErrors.email = "Email address is required";
-    if (!formData.occupation.trim())
-      newErrors.occupation = "Occupation is required";
+    if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.placeOfBirth.trim())
+      newErrors.placeOfBirth = "Place of birth is required";
+
+    // Identity document validation - aligned with backend requirements
     if (!formData.identityDocType)
       newErrors.identityDocType = "Identity document type is required";
     if (!formData.identityDocument)
-      newErrors.identityDocument = "Identity document is required";
+      newErrors.identityDocument = "Identity document file is required";
+    if (!formData.documentNumber.trim())
+      newErrors.documentNumber = "Document number is required";
+    if (!formData.issueDate) newErrors.issueDate = "Issue date is required";
+    if (!formData.expiryDate) newErrors.expiryDate = "Expiry date is required";
+    if (!formData.issuingAuthority.trim())
+      newErrors.issuingAuthority = "Issuing authority is required";
+
+    // Address validation - aligned with backend requirements
+    if (!formData.street.trim())
+      newErrors.street = "Street address is required";
+    if (!formData.city.trim()) newErrors.city = "City is required";
+    if (!formData.state.trim()) newErrors.state = "State/Province is required";
+    if (!formData.postalCode.trim())
+      newErrors.postalCode = "Postal code is required";
+    if (!formData.country) newErrors.country = "Country is required";
     if (!formData.addressDocument)
-      newErrors.addressDocument = "Address document is required";
+      newErrors.addressDocument = "Address proof document is required";
+
+    // Financial information validation - aligned with backend requirements
     if (!formData.incomeRange)
       newErrors.incomeRange = "Income range is required";
     if (!formData.employmentStatus)
       newErrors.employmentStatus = "Employment status is required";
-    if (!formData.cardholderName)
+    if (!formData.sourceOfFunds)
+      newErrors.sourceOfFunds = "Source of funds is required";
+
+    // Debit card validation - aligned with backend requirements
+    if (!formData.cardholderName.trim())
       newErrors.cardholderName = "Cardholder name is required";
-    if (!formData.cardNumber) newErrors.cardNumber = "Card number is required";
-    if (!formData.expiryDate) newErrors.expiryDate = "Expiry date is required";
-    if (!formData.cvv) newErrors.cvv = "CVV is required";
-    if (!formData.billingAddress)
-      newErrors.billingAddress = "Billing address is required";
-    if (!formData.dataProcessingConsent)
-      newErrors.dataProcessingConsent = "Data processing consent is required";
-    if (!formData.dataSharingConsent)
-      newErrors.dataSharingConsent = "Data sharing consent is required";
+    if (!formData.cardNumber.replace(/\s/g, ""))
+      newErrors.cardNumber = "Card number is required";
+    if (!formData.bankName.trim()) newErrors.bankName = "Bank name is required";
+    if (!formData.cardType) newErrors.cardType = "Card type is required";
+
+    // Consent validation - aligned with backend requirements
+    if (!formData.dataProcessing)
+      newErrors.dataProcessing = "Data processing consent is required";
+    if (!formData.kycVerification)
+      newErrors.kycVerification = "KYC verification consent is required";
+    if (!formData.dataSharing)
+      newErrors.dataSharing = "Data sharing consent is required";
+    if (!formData.termsOfService)
+      newErrors.termsOfService = "Terms of service acceptance is required";
+    if (!formData.privacyPolicy)
+      newErrors.privacyPolicy = "Privacy policy acceptance is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("KYC Form Submitted:", formData);
-      alert(
-        "KYC form submitted successfully! Processing identity verification..."
-      );
-    } else {
+    if (!validateForm()) {
       alert("Please fix the errors in the form before submitting.");
+      return;
     }
+
+    try {
+      // Transform frontend data to backend format
+      const kycData = transformToBackendFormat(formData);
+
+      console.log("KYC Form Submitted:", kycData);
+
+      // TODO: Replace with actual API call to your backend
+      // Example: const result = await submitKYCData(kycData);
+
+      alert(
+        "KYC form submitted successfully! Processing identity verification and DID creation..."
+      );
+    } catch (error) {
+      console.error("KYC submission error:", error);
+      alert("There was an error submitting your KYC data. Please try again.");
+    }
+  };
+
+  // Transform frontend form data to backend-expected format
+  const transformToBackendFormat = (formData) => {
+    return {
+      personalInfo: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
+        nationality: formData.nationality,
+        phoneNumber: formData.phoneNumber,
+        email: formData.email,
+        gender: formData.gender,
+        placeOfBirth: formData.placeOfBirth,
+      },
+      identityDocuments: [
+        {
+          type:
+            formData.identityDocType === "national_id"
+              ? "government_id"
+              : formData.identityDocType,
+          documentNumber: formData.documentNumber,
+          issueDate: formData.issueDate,
+          expiryDate: formData.expiryDate,
+          issuingAuthority: formData.issuingAuthority,
+          file: formData.identityDocument,
+        },
+      ],
+      addressData: {
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        postalCode: formData.postalCode,
+        country: formData.country,
+      },
+      addressProofDocument: {
+        type: "utility_bill", // You might want to add this as a dropdown
+        issueDate: new Date().toISOString().split("T")[0], // Current date as placeholder
+        file: formData.addressDocument,
+      },
+      financialInfo: {
+        incomeRange: formData.incomeRange,
+        employmentStatus: formData.employmentStatus,
+        sourceOfFunds: formData.sourceOfFunds,
+        employer: formData.employer,
+      },
+      cardData: {
+        cardNumber: formData.cardNumber.replace(/\s/g, ""),
+        bankName: formData.bankName,
+        cardType: formData.cardType,
+      },
+      consents: {
+        dataProcessing: formData.dataProcessing,
+        kycVerification: formData.kycVerification,
+        dataSharing: formData.dataSharing,
+        termsOfService: formData.termsOfService,
+        privacyPolicy: formData.privacyPolicy,
+        ipAddress: "unknown", // You might want to get actual IP
+      },
+    };
   };
 
   return (
