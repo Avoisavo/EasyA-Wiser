@@ -18,7 +18,8 @@
     "framer-motion": "^12.16.0",
     "react-tsparticles": "^2.12.2",
     "tsparticles": "^3.8.1",
-    "tsparticles-slim": "^2.12.0"
+    "tsparticles-slim": "^2.12.0",
+    "xrpl": "^4.2.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
