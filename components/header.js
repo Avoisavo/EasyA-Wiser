@@ -41,29 +41,6 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Middle - Navigation Buttons */}
-          <div className="flex items-center space-x-4">
-            <Link href="/create">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300"
-              >
-                Generate a Card
-              </motion.button>
-            </Link>
-            
-            <Link href="/kyc-form">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 transition-all duration-300"
-              >
-                KYC
-              </motion.button>
-            </Link>
-          </div>
-
           {/* Right side - Connect Wallet Button or Connected Address */}
           {!isConnected ? (
             <motion.button
@@ -130,4 +107,4 @@ export default function Header() {
       />
     </header>
   );
-}
+} 

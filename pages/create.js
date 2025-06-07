@@ -40,8 +40,8 @@ export default function CreatePage() {
         throw new Error(data.error || "Failed to create card.");
       }
       
-      // On success, save card details to session storage and redirect
-      sessionStorage.setItem('newCardDetails', JSON.stringify(data));
+      // On success, save card details to local storage and redirect
+      localStorage.setItem('newCardDetails', JSON.stringify(data));
       router.push('/card');
 
     } catch (err) {
