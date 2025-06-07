@@ -256,6 +256,169 @@ export default function AMM() {
     }
   };
 
+  // Check AMM
+  const checkAMM = async () => {
+    if (!asset1Currency || !asset2Currency) {
+      alert('Please fill in both asset currencies');
+      return;
+    }
+    
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setAmmInfo(`===Checking AMM===\n\nConnected to ${net}.`);
+      
+      let amm_info_request = null;
+      
+      // Format the amm_info command based on the combination of XRP and tokens
+      if (asset1Currency === 'XRP') {
+        amm_info_request = {
+          "command": "amm_info",
+          "asset": {
+            "currency": "XRP"
+          },
+          "asset2": {
+            "currency": asset2Currency,
+            "issuer": asset2Issuer
+          },
+          "ledger_index": "validated"
+        };
+      } else if (asset2Currency === 'XRP') {
+        amm_info_request = {
+          "command": "amm_info",
+          "asset": {
+            "currency": asset1Currency,
+            "issuer": asset1Issuer
+          },
+          "asset2": {
+            "currency": "XRP"
+          },
+          "ledger_index": "validated"
+        };
+      } else {
+        amm_info_request = {
+          "command": "amm_info",
+          "asset": {
+            "currency": asset1Currency,
+            "issuer": asset1Issuer
+          },
+          "asset2": {
+            "currency": asset2Currency,
+            "issuer": asset2Issuer
+          },
+          "ledger_index": "validated"
+        };
+      }
+      
+      const amm_info_result = await client.request(amm_info_request);
+      setAmmInfo(prev => prev + `\n\nAMM Found!\n\n${JSON.stringify(amm_info_result.result.amm, null, 2)}`);
+      
+    } catch (error) {
+      console.error('Error checking AMM:', error);
+      setAmmInfo(prev => prev + `\n\nAMM not found or error: ${error.message}`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
+  // Create AMM
+  const createAMM = async () => {
+    if (!asset1Currency || !asset1Amount || !asset2Currency || !asset2Amount) {
+      alert('Please fill in all AMM asset fields');
+      return;
+    }
+    
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults(`===Creating AMM===\n\nConnected to ${net}.`);
+      
+      const standby_wallet = xrpl.Wallet.fromSeed(standbyAccount.seed);
+      
+      // AMMCreate requires burning one owner reserve
+      const ss = await client.request({"command": "server_state"});
+      const amm_fee_drops = ss.result.state.validated_ledger.reserve_inc.toString();
+      
+      let ammCreate = null;
+      
+      // Format the AMMCreate transaction based on the combination of XRP and tokens
+      if (asset1Currency === 'XRP') {
+        ammCreate = {
+          "TransactionType": "AMMCreate",
+          "Account": standby_wallet.address,
+          "Amount": (parseFloat(asset1Amount) * 1000000).toString(), // convert XRP to drops
+          "Amount2": {
+            "currency": asset2Currency,
+            "issuer": asset2Issuer,
+            "value": asset2Amount
+          },
+          "TradingFee": 500, // 500 = 0.5%
+          "Fee": amm_fee_drops
+        };
+      } else if (asset2Currency === 'XRP') {
+        ammCreate = {
+          "TransactionType": "AMMCreate",
+          "Account": standby_wallet.address,
+          "Amount": {
+            "currency": asset1Currency,
+            "issuer": asset1Issuer,
+            "value": asset1Amount
+          },
+          "Amount2": (parseFloat(asset2Amount) * 1000000).toString(), // convert XRP to drops
+          "TradingFee": 500, // 500 = 0.5%
+          "Fee": amm_fee_drops
+        };
+      } else {
+        ammCreate = {
+          "TransactionType": "AMMCreate",
+          "Account": standby_wallet.address,
+          "Amount": {
+            "currency": asset1Currency,
+            "issuer": asset1Issuer,
+            "value": asset1Amount
+          },
+          "Amount2": {
+            "currency": asset2Currency,
+            "issuer": asset2Issuer,
+            "value": asset2Amount
+          },
+          "TradingFee": 500, // 500 = 0.5%
+          "Fee": amm_fee_drops
+        };
+      }
+      
+      const prepared_create = await client.autofill(ammCreate);
+      setResults(prev => prev + `\n\nPrepared transaction:\n${JSON.stringify(prepared_create, null, 2)}`);
+      
+      const signed_create = standby_wallet.sign(prepared_create);
+      setResults(prev => prev + `\n\nSending AMMCreate transaction...`);
+      
+      const amm_create = await client.submitAndWait(signed_create.tx_blob);
+      
+      if (amm_create.result.meta.TransactionResult == "tesSUCCESS") {
+        setResults(prev => prev + `\n\nAMM created successfully!`);
+        // Update AMM info after creation
+        setTimeout(() => checkAMM(), 2000);
+      } else {
+        setResults(prev => prev + `\n\nError creating AMM: ${amm_create.result.meta.TransactionResult}`);
+      }
+      
+    } catch (error) {
+      console.error('Error creating AMM:', error);
+      setResults(prev => prev + `\n\nError: ${error.message}`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <Head>
@@ -518,10 +681,147 @@ export default function AMM() {
           </div>
         </div>
 
-        {/* Placeholder for next features */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-center">AMM creation and checking functionality coming next...</p>
+        {/* AMM Management */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">AMM Management</h3>
+          <p className="text-gray-600 mb-4">Check for existing AMM pairs and create new AMM pools.</p>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Asset 1 */}
+            <div className="space-y-4">
+              <h4 className="text-md font-semibold">Asset 1</h4>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Currency</label>
+                <input
+                  type="text"
+                  value={asset1Currency}
+                  onChange={(e) => setAsset1Currency(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="e.g., XRP or TST"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Issuer (if not XRP)</label>
+                <input
+                  type="text"
+                  value={asset1Issuer}
+                  onChange={(e) => setAsset1Issuer(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Issuer address"
+                  disabled={asset1Currency === 'XRP'}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Amount</label>
+                <input
+                  type="text"
+                  value={asset1Amount}
+                  onChange={(e) => setAsset1Amount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="e.g., 1000"
+                />
+              </div>
+            </div>
+            
+            {/* Asset 2 */}
+            <div className="space-y-4">
+              <h4 className="text-md font-semibold">Asset 2</h4>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Currency</label>
+                <input
+                  type="text"
+                  value={asset2Currency}
+                  onChange={(e) => setAsset2Currency(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="e.g., XRP or FOO"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Issuer (if not XRP)</label>
+                <input
+                  type="text"
+                  value={asset2Issuer}
+                  onChange={(e) => setAsset2Issuer(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Issuer address"
+                  disabled={asset2Currency === 'XRP'}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Amount</label>
+                <input
+                  type="text"
+                  value={asset2Amount}
+                  onChange={(e) => setAsset2Amount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="e.g., 500"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex gap-4 mt-6">
+            <button
+              onClick={checkAMM}
+              disabled={loading}
+              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            >
+              Check AMM
+            </button>
+            <button
+              onClick={createAMM}
+              disabled={loading}
+              className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+            >
+              Create AMM
+            </button>
+          </div>
         </div>
+
+        {/* Results and AMM Info */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Results */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">Results</h3>
+            <textarea
+              value={results}
+              onChange={(e) => setResults(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+              rows={12}
+              placeholder="Transaction results will appear here..."
+            />
+          </div>
+          
+          {/* AMM Info */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">AMM Information</h3>
+            <textarea
+              value={ammInfo}
+              onChange={(e) => setAmmInfo(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+              rows={12}
+              placeholder="AMM information will appear here..."
+            />
+          </div>
+        </div>
+
+        {/* Loading Overlay */}
+        {loading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span>Processing...</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
