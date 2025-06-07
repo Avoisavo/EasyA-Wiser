@@ -204,32 +204,131 @@ export default function Account() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600">Account UI coming soon...</p>
-          
-          {/* Development testing buttons - will be replaced with proper UI */}
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => getNewAccount(1)}
-              disabled={loading}
-              className="px-3 py-1 bg-blue-500 text-white rounded text-xs disabled:opacity-50"
-            >
-              Test: Get Account 1
-            </button>
-            <button
-              onClick={() => getXrpBalance()}
-              disabled={loading}
-              className="px-3 py-1 bg-green-500 text-white rounded text-xs disabled:opacity-50"
-            >
-              Test: Get Balance
-            </button>
+        {/* Account Management */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Account 1 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">Account 1</h3>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => getNewAccount(1)}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                >
+                  Get New Account 1
+                </button>
+                <button
+                  onClick={() => getAccountFromSeed(1)}
+                  disabled={loading}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                >
+                  Get Account From Seed
+                </button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Account 1 Name</label>
+                <input
+                  type="text"
+                  value={account1.name}
+                  onChange={(e) => setAccount1({...account1, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter a name for this account"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Account 1 Address</label>
+                <input
+                  type="text"
+                  value={account1.address}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Account 1 Seed</label>
+                <input
+                  type="text"
+                  value={account1.seed}
+                  onChange={(e) => setAccount1({...account1, seed: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter or paste seed"
+                />
+              </div>
+            </div>
           </div>
+
+          {/* Account 2 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">Account 2</h3>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => getNewAccount(2)}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                >
+                  Get New Account 2
+                </button>
+                <button
+                  onClick={() => getAccountFromSeed(2)}
+                  disabled={loading}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                >
+                  Get Account From Seed
+                </button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Account 2 Name</label>
+                <input
+                  type="text"
+                  value={account2.name}
+                  onChange={(e) => setAccount2({...account2, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter a name for this account"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Account 2 Address</label>
+                <input
+                  type="text"
+                  value={account2.address}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Account 2 Seed</label>
+                <input
+                  type="text"
+                  value={account2.seed}
+                  onChange={(e) => setAccount2({...account2, seed: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Enter or paste seed"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <p className="text-gray-600">Transaction interface coming soon...</p>
           
           {results && (
             <div className="mt-4">
-              <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
-                {results}
-              </pre>
+              <label className="block text-sm font-medium mb-1">Results</label>
+              <textarea
+                value={results}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
+                rows={6}
+              />
             </div>
           )}
         </div>
