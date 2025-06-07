@@ -8,12 +8,13 @@ Wiser gives users seamless and cost-effective access to real-world payments usin
 
 ## 💡 Inspiration
 
-Our team constantly juggle between fiat and crypto, and we were inspired by the inefficiencies and centralization in most Web3-to-fiat bridges:
+As crypto developers and users, our team has long struggled with the inefficiencies between crypto and fiat worlds. Today’s so-called “crypto debit cards” are often pseudo-bridges:
 
-1. **Crypto enthusiasts** can’t swipe at most merchants without off-ramp hassles.  
-2. Why must users **preload a custodial** wallet to spend crypto?  
+1. Users are forced to convert and preload fiat in advance.  
+2. Users funds are held in custodial accounts.
+3. Users are essentially just using a Web2 fintech product with a crypto skin.  
 
-> “What if spending crypto felt exactly like swiping a debit card while the conversion happened seamlessly in the background?”  
+> “What if spending crypto could be as easy as swiping a debit card—without pre-funding while at the same time not giving up custody”  
 
 That question sparked Wiser.
 
