@@ -1,12 +1,12 @@
-import { motion } from 'framer-motion';
-import { useCallback } from 'react';
-import { useRouter } from 'next/router';
-import Particles from 'react-tsparticles';
-import { loadSlim } from 'tsparticles-slim';
-import { SmoothCursor } from '../components/ui/smooth-cursor';
-import { Inter } from 'next/font/google';
+import { motion } from "framer-motion";
+import { useCallback } from "react";
+import { useRouter } from "next/router";
+import Particles from "react-tsparticles";
+import { loadSlim } from "tsparticles-slim";
+import { SmoothCursor } from "../components/ui/smooth-cursor";
+import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export default function LandingPage() {
   const router = useRouter();
@@ -17,8 +17,9 @@ export default function LandingPage() {
   return (
     <>
       <SmoothCursor />
-      <div className={`relative min-h-screen overflow-hidden flex items-center justify-center cursor-none bg-white ${inter.className}`}>
-
+      <div
+        className={`relative min-h-screen overflow-hidden flex items-center justify-center cursor-none bg-white ${inter.className}`}
+      >
         {/* Dynamic Particles Background */}
         <Particles
           id="tsparticles"
@@ -53,8 +54,8 @@ export default function LandingPage() {
                 attract: {
                   enable: true,
                   rotateX: 600,
-                  rotateY: 1200
-                }
+                  rotateY: 1200,
+                },
               },
               number: {
                 density: {
@@ -80,93 +81,104 @@ export default function LandingPage() {
 
         {/* Geometric Pattern Background */}
         <div className="absolute inset-0">
-          <motion.div 
+          <motion.div
             className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-white"
-            animate={{ 
+            animate={{
               background: [
                 "linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #ffffff 100%)",
                 "linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #eff6ff 100%)",
-                "linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #ffffff 100%)"
-              ]
+                "linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #ffffff 100%)",
+              ],
             }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
-          <motion.div 
+          <motion.div
             className="absolute right-0 top-0 w-1/2 h-full opacity-20"
-            animate={{ 
+            animate={{
               x: [0, 20, 0],
-              opacity: [0.2, 0.4, 0.2]
+              opacity: [0.2, 0.4, 0.2],
             }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           >
-            <motion.div 
+            <motion.div
               className="absolute inset-0 bg-gradient-to-l from-blue-600/20 to-transparent"
-              animate={{ 
+              animate={{
                 background: [
                   "linear-gradient(270deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%)",
                   "linear-gradient(270deg, rgba(59, 130, 246, 0.3) 0%, transparent 100%)",
-                  "linear-gradient(270deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%)"
-                ]
+                  "linear-gradient(270deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%)",
+                ],
               }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             />
-            <motion.svg 
-              className="absolute inset-0 w-full h-full" 
+            <motion.svg
+              className="absolute inset-0 w-full h-full"
               viewBox="0 0 400 800"
-              animate={{ 
+              animate={{
                 rotate: [0, 360],
-                scale: [1, 1.1, 1]
+                scale: [1, 1.1, 1],
               }}
-              transition={{ 
+              transition={{
                 rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                scale: { duration: 8, repeat: Infinity, ease: "easeInOut" }
+                scale: { duration: 8, repeat: Infinity, ease: "easeInOut" },
               }}
             >
               <defs>
-                <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <motion.circle 
-                    cx="10" 
-                    cy="10" 
-                    r="1" 
-                    fill="#2563eb" 
-                    animate={{ 
+                <pattern
+                  id="dots"
+                  x="0"
+                  y="0"
+                  width="20"
+                  height="20"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <motion.circle
+                    cx="10"
+                    cy="10"
+                    r="1"
+                    fill="#2563eb"
+                    animate={{
                       opacity: [0.3, 0.8, 0.3],
-                      r: [1, 1.5, 1]
+                      r: [1, 1.5, 1],
                     }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
                   />
                 </pattern>
               </defs>
-              <rect width="100%" height="100%" fill="url(#dots)"/>
+              <rect width="100%" height="100%" fill="url(#dots)" />
             </motion.svg>
           </motion.div>
-          
+
           {/* Additional animated background elements */}
           <motion.div
             className="absolute left-0 top-1/4 w-1/3 h-1/2 opacity-10"
-            animate={{ 
+            animate={{
               rotate: [0, -360],
-              scale: [1, 1.2, 1]
+              scale: [1, 1.2, 1],
             }}
-            transition={{ 
+            transition={{
               rotate: { duration: 25, repeat: Infinity, ease: "linear" },
-              scale: { duration: 10, repeat: Infinity, ease: "easeInOut" }
+              scale: { duration: 10, repeat: Infinity, ease: "easeInOut" },
             }}
           >
             <div className="w-full h-full bg-gradient-radial from-blue-400/20 to-transparent rounded-full blur-3xl"></div>
           </motion.div>
-          
+
           <motion.div
             className="absolute right-1/4 bottom-1/4 w-1/4 h-1/4 opacity-10"
-            animate={{ 
+            animate={{
               rotate: [0, 360],
               x: [0, 50, 0],
-              y: [0, -30, 0]
+              y: [0, -30, 0],
             }}
-            transition={{ 
+            transition={{
               rotate: { duration: 15, repeat: Infinity, ease: "linear" },
               x: { duration: 8, repeat: Infinity, ease: "easeInOut" },
-              y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
+              y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
             }}
           >
             <div className="w-full h-full bg-gradient-radial from-blue-600/30 to-transparent rounded-full blur-2xl"></div>
@@ -184,31 +196,29 @@ export default function LandingPage() {
               <div className="text-sm text-blue-600 mb-7 font-semibold tracking-wider font-inter">
                 FOR BUSINESSES
               </div>
-              
+
               <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight font-inter">
-                Take back{' '}
-                <span className="text-blue-600">control</span>{' '}
-                of your{' '}
+                Take back <span className="text-blue-600">control</span> of your{" "}
                 <span className="text-blue-600">capital</span>.
               </h1>
-              
+
               <div className="text-gray-600 text-lg mb-4 font-inter font-normal">
                 Secure your treasury and scale your business globally
               </div>
               <div className="text-gray-600 text-lg mb-8 font-inter font-normal">
                 with a truly self-custodial account that only you control.
               </div>
-              
+
               <div className="text-gray-500 mb-8 font-inter font-medium">
                 You hold the keys. Always.
               </div>
-              
+
               <motion.button
                 className="bg-blue-600 text-white px-8 py-3 rounded-full text-lg font-bold hover:bg-blue-500 transition-all duration-300 shadow-lg hover:shadow-blue-400/20 font-inter tracking-wide"
-                onClick={() => router.push('/nocard')}
-                whileHover={{ 
+                onClick={() => router.push("/kyc-form")}
+                whileHover={{
                   scale: 1.1,
-                  boxShadow: "0 20px 50px rgba(37, 99, 235, 0.3)"
+                  boxShadow: "0 20px 50px rgba(37, 99, 235, 0.3)",
                 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -229,8 +239,9 @@ export default function LandingPage() {
               <motion.div
                 className="absolute inset-0 w-96 h-[650px] -translate-x-8 -translate-y-6 rounded-full opacity-40"
                 style={{
-                  background: 'radial-gradient(ellipse at center, rgba(37, 99, 235, 0.3) 0%, rgba(59, 130, 246, 0.2) 40%, rgba(96, 165, 250, 0.1) 70%, transparent 100%)',
-                  filter: 'blur(30px)',
+                  background:
+                    "radial-gradient(ellipse at center, rgba(37, 99, 235, 0.3) 0%, rgba(59, 130, 246, 0.2) 40%, rgba(96, 165, 250, 0.1) 70%, transparent 100%)",
+                  filter: "blur(30px)",
                 }}
                 animate={{
                   scale: [1, 1.1, 1],
@@ -239,27 +250,35 @@ export default function LandingPage() {
                 transition={{
                   duration: 3,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
               />
               <div className="relative z-10 w-80 h-[600px] bg-gray-900 rounded-[40px] p-6 shadow-2xl border border-gray-700">
                 <div className="w-full h-full bg-black rounded-[30px] p-4 overflow-hidden">
                   <div className="text-white text-center">
-                    <motion.div 
+                    <motion.div
                       className="text-sm text-gray-400 mb-4 font-inter font-medium"
                       animate={{ opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                     >
                       Transfers - Send
                     </motion.div>
-                    <motion.div 
+                    <motion.div
                       className="text-2xl font-bold mb-6 font-inter"
                       animate={{ y: [0, -2, 0] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                     >
                       Recipient Country
                     </motion.div>
-                    
+
                     {/* Country flags mockup */}
                     <div className="grid grid-cols-3 gap-4 mb-6">
                       {[
@@ -268,20 +287,20 @@ export default function LandingPage() {
                         { flag: "🇪🇺", color: "bg-green-500", delay: 0.4 },
                         { flag: "🇯🇵", color: "bg-purple-500", delay: 0.6 },
                         { flag: "🇨🇳", color: "bg-yellow-500", delay: 0.8 },
-                        { flag: "🇮🇳", color: "bg-pink-500", delay: 1.0 }
+                        { flag: "🇮🇳", color: "bg-pink-500", delay: 1.0 },
                       ].map((item, index) => (
-                        <motion.div 
+                        <motion.div
                           key={index}
                           className={`w-12 h-12 ${item.color} rounded-full mx-auto flex items-center justify-center text-white font-bold`}
-                          animate={{ 
+                          animate={{
                             scale: [1, 1.1, 1],
-                            rotate: [0, 5, 0, -5, 0]
+                            rotate: [0, 5, 0, -5, 0],
                           }}
-                          transition={{ 
+                          transition={{
                             duration: 2,
                             repeat: Infinity,
                             ease: "easeInOut",
-                            delay: item.delay
+                            delay: item.delay,
                           }}
                           whileHover={{ scale: 1.2, rotate: 15 }}
                         >
@@ -289,14 +308,20 @@ export default function LandingPage() {
                         </motion.div>
                       ))}
                     </div>
-                    
-                    <motion.div 
+
+                    <motion.div
                       className="space-y-3 text-left"
                       animate={{ x: [0, 2, 0] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                     >
                       <div className="flex justify-between text-sm font-inter">
-                        <span className="text-gray-400 font-medium">Method</span>
+                        <span className="text-gray-400 font-medium">
+                          Method
+                        </span>
                         <span className="font-medium">Bank Transfer</span>
                       </div>
                       <div className="flex justify-between text-sm font-inter">
@@ -304,24 +329,34 @@ export default function LandingPage() {
                         <motion.span
                           className="font-semibold"
                           animate={{ color: ["#ffffff", "#fbbf24", "#ffffff"] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
                         >
                           1.2405 USD
                         </motion.span>
                       </div>
                       <div className="flex justify-between text-sm font-inter">
-                        <span className="text-gray-400 font-medium">Amount</span>
+                        <span className="text-gray-400 font-medium">
+                          Amount
+                        </span>
                         <span className="font-semibold">$250.00</span>
                       </div>
                     </motion.div>
-                    
-                    <motion.button 
+
+                    <motion.button
                       className="w-full bg-yellow-400 text-black py-3 rounded-full font-bold mt-6 font-inter tracking-wide"
-                      animate={{ 
+                      animate={{
                         backgroundColor: ["#fbbf24", "#f59e0b", "#fbbf24"],
-                        scale: [1, 1.02, 1]
+                        scale: [1, 1.02, 1],
                       }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
                     >
