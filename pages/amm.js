@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import * as xrpl from 'xrpl';
+import {
+  getNetworkUrl,
+  getNewAccountFromFaucet,
+  getAccountFromSeed,
+  createTrustLine as createTrustLineUtil,
+  configureAccount as configureAccountUtil,
+  issueTokens as issueTokensUtil,
+  checkAMM as checkAMMUtil,
+  createAMM as createAMMUtil
+} from '../utils/xrpl';
 
 export default function AMM() {
   // Network selection
@@ -39,81 +49,74 @@ export default function AMM() {
   const [ammInfo, setAmmInfo] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Get network URL
-  const getNetworkUrl = () => {
-    return selectedNetwork === 'testnet' 
-      ? 'wss://s.altnet.rippletest.net:51233/' 
-      : 'wss://s.devnet.rippletest.net:51233/';
-  };
-
   // Get new account from faucet
   const getNewAccount = async (accountType) => {
     setLoading(true);
-    const net = getNetworkUrl();
-    const client = new xrpl.Client(net);
+    const networkUrl = getNetworkUrl(selectedNetwork);
     
     try {
-      await client.connect();
-      setResults(`===Getting ${accountType} Account===\n\nConnected to ${net}.`);
+      setResults(`===Getting ${accountType} Account===\n\nConnected to ${networkUrl}.`);
       
-      const faucetHost = null;
-      const { wallet } = await client.fundWallet(null, { faucetHost });
+      const result = await getNewAccountFromFaucet(networkUrl);
       
-      const newAccountData = {
-        name: accountType === 'standby' ? standbyAccount.name : operationalAccount.name,
-        address: wallet.address,
-        seed: wallet.seed
-      };
-      
-      if (accountType === 'standby') {
-        setStandbyAccount(newAccountData);
+      if (result.success) {
+        const newAccountData = {
+          name: accountType === 'standby' ? standbyAccount.name : operationalAccount.name,
+          address: result.data.address,
+          seed: result.data.seed
+        };
+        
+        if (accountType === 'standby') {
+          setStandbyAccount(newAccountData);
+        } else {
+          setOperationalAccount(newAccountData);
+        }
+        
+        setResults(prev => prev + `\n\n${result.message}`);
       } else {
-        setOperationalAccount(newAccountData);
+        setResults(prev => prev + `\n===Error: ${result.message}===\n`);
       }
-      
-      setResults(prev => prev + `\n\nNew ${accountType} account created!\nAddress: ${wallet.address}\nSeed: ${wallet.seed}`);
       
     } catch (error) {
       console.error('Error getting account:', error);
       setResults(prev => prev + `\n===Error: ${error.message}===\n`);
     } finally {
-      await client.disconnect();
       setLoading(false);
     }
   };
 
   // Get account from seed
-  const getAccountFromSeed = async (accountType) => {
+  const getAccountFromSeedHandler = async (accountType) => {
     setLoading(true);
-    const net = getNetworkUrl();
-    const client = new xrpl.Client(net);
+    const networkUrl = getNetworkUrl(selectedNetwork);
     
     try {
-      await client.connect();
       setResults(`===Finding ${accountType} wallet.===\n\n`);
       
       const seed = accountType === 'standby' ? standbyAccount.seed : operationalAccount.seed;
-      const wallet = xrpl.Wallet.fromSeed(seed);
-      const address = wallet.address;
+      const result = await getAccountFromSeed(seed, networkUrl);
       
-      const updatedAccount = {
-        ...(accountType === 'standby' ? standbyAccount : operationalAccount),
-        address: address
-      };
-      
-      if (accountType === 'standby') {
-        setStandbyAccount(updatedAccount);
+      if (result.success) {
+        const updatedAccount = {
+          ...(accountType === 'standby' ? standbyAccount : operationalAccount),
+          address: result.data.address
+        };
+        
+        if (accountType === 'standby') {
+          setStandbyAccount(updatedAccount);
+        } else {
+          setOperationalAccount(updatedAccount);
+        }
+        
+        setResults(prev => prev + `===Wallet found.===\n\n${accountType} account address: ${result.data.address}\n\n`);
       } else {
-        setOperationalAccount(updatedAccount);
+        setResults(prev => prev + `\nError: ${result.message}\n`);
       }
-      
-      setResults(prev => prev + `===Wallet found.===\n\n${accountType} account address: ` + address + "\n\n");
       
     } catch (error) {
       console.error('Error getting account from seed:', error);
       setResults(prev => prev + `\nError: ${error.message}\n`);
     } finally {
-      await client.disconnect();
       setLoading(false);
     }
   };
@@ -126,43 +129,30 @@ export default function AMM() {
     }
     
     setLoading(true);
-    const net = getNetworkUrl();
-    const client = new xrpl.Client(net);
+    const networkUrl = getNetworkUrl(selectedNetwork);
     
     try {
-      await client.connect();
-      setResults(`===Creating Trust Line===\n\nConnected to ${net}.`);
+      setResults(`===Creating Trust Line===\n\nConnected to ${networkUrl}.`);
       
-      const standby_wallet = xrpl.Wallet.fromSeed(standbyAccount.seed);
-      
-      const trustSet = {
-        TransactionType: "TrustSet",
-        Account: standby_wallet.address,
-        LimitAmount: {
-          currency: currency,
-          issuer: destination,
-          value: trustlineLimit
-        }
+      const config = {
+        trustlineLimit,
+        destination,
+        currency,
+        standbyAccountSeed: standbyAccount.seed
       };
       
-      const prepared = await client.autofill(trustSet);
-      const signed = standby_wallet.sign(prepared);
-      const result = await client.submitAndWait(signed.tx_blob);
+      const result = await createTrustLineUtil(config, networkUrl);
       
-      if (result.result.meta.TransactionResult == "tesSUCCESS") {
-        setResults(prev => prev + `\n\nTrust line created successfully!`);
-        setResults(prev => prev + `\nLimit: ${trustlineLimit}`);
-        setResults(prev => prev + `\nCurrency: ${currency}`);
-        setResults(prev => prev + `\nIssuer: ${destination}`);
+      if (result.success) {
+        setResults(prev => prev + `\n\n${result.message}`);
       } else {
-        setResults(prev => prev + `\n\nError creating trust line: ${result.result.meta.TransactionResult}`);
+        setResults(prev => prev + `\n\n${result.message}`);
       }
       
     } catch (error) {
       console.error('Error creating trust line:', error);
       setResults(prev => prev + `\n\nError: ${error.message}`);
     } finally {
-      await client.disconnect();
       setLoading(false);
     }
   };
@@ -170,37 +160,23 @@ export default function AMM() {
   // Configure account (Allow Rippling)
   const configureAccount = async () => {
     setLoading(true);
-    const net = getNetworkUrl();
-    const client = new xrpl.Client(net);
+    const networkUrl = getNetworkUrl(selectedNetwork);
     
     try {
-      await client.connect();
-      setResults(`===Configuring Operational Account===\n\nConnected to ${net}.`);
+      setResults(`===Configuring Operational Account===\n\nConnected to ${networkUrl}.`);
       
-      const operational_wallet = xrpl.Wallet.fromSeed(operationalAccount.seed);
+      const result = await configureAccountUtil(operationalAccount.seed, networkUrl);
       
-      const accountSet = {
-        TransactionType: "AccountSet",
-        Account: operational_wallet.address,
-        SetFlag: 8 // asfDefaultRipple
-      };
-      
-      const prepared = await client.autofill(accountSet);
-      const signed = operational_wallet.sign(prepared);
-      const result = await client.submitAndWait(signed.tx_blob);
-      
-      if (result.result.meta.TransactionResult == "tesSUCCESS") {
-        setResults(prev => prev + `\n\nOperational account configured successfully!`);
-        setResults(prev => prev + `\nAllow Rippling: Enabled`);
+      if (result.success) {
+        setResults(prev => prev + `\n\n${result.message}`);
       } else {
-        setResults(prev => prev + `\n\nError configuring account: ${result.result.meta.TransactionResult}`);
+        setResults(prev => prev + `\n\n${result.message}`);
       }
       
     } catch (error) {
       console.error('Error configuring account:', error);
       setResults(prev => prev + `\n\nError: ${error.message}`);
     } finally {
-      await client.disconnect();
       setLoading(false);
     }
   };
@@ -213,45 +189,30 @@ export default function AMM() {
     }
     
     setLoading(true);
-    const net = getNetworkUrl();
-    const client = new xrpl.Client(net);
+    const networkUrl = getNetworkUrl(selectedNetwork);
     
     try {
-      await client.connect();
-      setResults(`===Issuing Tokens===\n\nConnected to ${net}.`);
+      setResults(`===Issuing Tokens===\n\nConnected to ${networkUrl}.`);
       
-      const operational_wallet = xrpl.Wallet.fromSeed(operationalAccount.seed);
-      
-      const payment = {
-        TransactionType: "Payment",
-        Account: operational_wallet.address,
-        Destination: destination,
-        Amount: {
-          currency: currency,
-          issuer: operational_wallet.address,
-          value: amount
-        }
+      const config = {
+        amount,
+        destination,
+        currency,
+        operationalAccountSeed: operationalAccount.seed
       };
       
-      const prepared = await client.autofill(payment);
-      const signed = operational_wallet.sign(prepared);
-      const result = await client.submitAndWait(signed.tx_blob);
+      const result = await issueTokensUtil(config, networkUrl);
       
-      if (result.result.meta.TransactionResult == "tesSUCCESS") {
-        setResults(prev => prev + `\n\nTokens issued successfully!`);
-        setResults(prev => prev + `\nAmount: ${amount}`);
-        setResults(prev => prev + `\nCurrency: ${currency}`);
-        setResults(prev => prev + `\nFrom: ${operational_wallet.address}`);
-        setResults(prev => prev + `\nTo: ${destination}`);
+      if (result.success) {
+        setResults(prev => prev + `\n\n${result.message}`);
       } else {
-        setResults(prev => prev + `\n\nError issuing tokens: ${result.result.meta.TransactionResult}`);
+        setResults(prev => prev + `\n\n${result.message}`);
       }
       
     } catch (error) {
       console.error('Error issuing tokens:', error);
       setResults(prev => prev + `\n\nError: ${error.message}`);
     } finally {
-      await client.disconnect();
       setLoading(false);
     }
   };
@@ -264,63 +225,30 @@ export default function AMM() {
     }
     
     setLoading(true);
-    const net = getNetworkUrl();
-    const client = new xrpl.Client(net);
+    const networkUrl = getNetworkUrl(selectedNetwork);
     
     try {
-      await client.connect();
-      setAmmInfo(`===Checking AMM===\n\nConnected to ${net}.`);
+      setAmmInfo(`===Checking AMM===\n\nConnected to ${networkUrl}.`);
       
-      let amm_info_request = null;
+      const config = {
+        asset1Currency,
+        asset1Issuer,
+        asset2Currency,
+        asset2Issuer
+      };
       
-      // Format the amm_info command based on the combination of XRP and tokens
-      if (asset1Currency === 'XRP') {
-        amm_info_request = {
-          "command": "amm_info",
-          "asset": {
-            "currency": "XRP"
-          },
-          "asset2": {
-            "currency": asset2Currency,
-            "issuer": asset2Issuer
-          },
-          "ledger_index": "validated"
-        };
-      } else if (asset2Currency === 'XRP') {
-        amm_info_request = {
-          "command": "amm_info",
-          "asset": {
-            "currency": asset1Currency,
-            "issuer": asset1Issuer
-          },
-          "asset2": {
-            "currency": "XRP"
-          },
-          "ledger_index": "validated"
-        };
+      const result = await checkAMMUtil(config, networkUrl);
+      
+      if (result.success) {
+        setAmmInfo(prev => prev + `\n\n${result.message}`);
       } else {
-        amm_info_request = {
-          "command": "amm_info",
-          "asset": {
-            "currency": asset1Currency,
-            "issuer": asset1Issuer
-          },
-          "asset2": {
-            "currency": asset2Currency,
-            "issuer": asset2Issuer
-          },
-          "ledger_index": "validated"
-        };
+        setAmmInfo(prev => prev + `\n\n${result.message}`);
       }
-      
-      const amm_info_result = await client.request(amm_info_request);
-      setAmmInfo(prev => prev + `\n\nAMM Found!\n\n${JSON.stringify(amm_info_result.result.amm, null, 2)}`);
       
     } catch (error) {
       console.error('Error checking AMM:', error);
       setAmmInfo(prev => prev + `\n\nAMM not found or error: ${error.message}`);
     } finally {
-      await client.disconnect();
       setLoading(false);
     }
   };
@@ -333,88 +261,37 @@ export default function AMM() {
     }
     
     setLoading(true);
-    const net = getNetworkUrl();
-    const client = new xrpl.Client(net);
+    const networkUrl = getNetworkUrl(selectedNetwork);
     
     try {
-      await client.connect();
-      setResults(`===Creating AMM===\n\nConnected to ${net}.`);
+      setResults(`===Creating AMM===\n\nConnected to ${networkUrl}.`);
       
-      const standby_wallet = xrpl.Wallet.fromSeed(standbyAccount.seed);
+      const config = {
+        asset1Currency,
+        asset1Issuer,
+        asset1Amount,
+        asset2Currency,
+        asset2Issuer,
+        asset2Amount,
+        standbyAccountSeed: standbyAccount.seed
+      };
       
-      // AMMCreate requires burning one owner reserve
-      const ss = await client.request({"command": "server_state"});
-      const amm_fee_drops = ss.result.state.validated_ledger.reserve_inc.toString();
+      const result = await createAMMUtil(config, networkUrl);
       
-      let ammCreate = null;
-      
-      // Format the AMMCreate transaction based on the combination of XRP and tokens
-      if (asset1Currency === 'XRP') {
-        ammCreate = {
-          "TransactionType": "AMMCreate",
-          "Account": standby_wallet.address,
-          "Amount": (parseFloat(asset1Amount) * 1000000).toString(), // convert XRP to drops
-          "Amount2": {
-            "currency": asset2Currency,
-            "issuer": asset2Issuer,
-            "value": asset2Amount
-          },
-          "TradingFee": 500, // 500 = 0.5%
-          "Fee": amm_fee_drops
-        };
-      } else if (asset2Currency === 'XRP') {
-        ammCreate = {
-          "TransactionType": "AMMCreate",
-          "Account": standby_wallet.address,
-          "Amount": {
-            "currency": asset1Currency,
-            "issuer": asset1Issuer,
-            "value": asset1Amount
-          },
-          "Amount2": (parseFloat(asset2Amount) * 1000000).toString(), // convert XRP to drops
-          "TradingFee": 500, // 500 = 0.5%
-          "Fee": amm_fee_drops
-        };
-      } else {
-        ammCreate = {
-          "TransactionType": "AMMCreate",
-          "Account": standby_wallet.address,
-          "Amount": {
-            "currency": asset1Currency,
-            "issuer": asset1Issuer,
-            "value": asset1Amount
-          },
-          "Amount2": {
-            "currency": asset2Currency,
-            "issuer": asset2Issuer,
-            "value": asset2Amount
-          },
-          "TradingFee": 500, // 500 = 0.5%
-          "Fee": amm_fee_drops
-        };
-      }
-      
-      const prepared_create = await client.autofill(ammCreate);
-      setResults(prev => prev + `\n\nPrepared transaction:\n${JSON.stringify(prepared_create, null, 2)}`);
-      
-      const signed_create = standby_wallet.sign(prepared_create);
-      setResults(prev => prev + `\n\nSending AMMCreate transaction...`);
-      
-      const amm_create = await client.submitAndWait(signed_create.tx_blob);
-      
-      if (amm_create.result.meta.TransactionResult == "tesSUCCESS") {
-        setResults(prev => prev + `\n\nAMM created successfully!`);
+      if (result.success) {
+        setResults(prev => prev + `\n\n${result.preparedTransactionMessage}`);
+        setResults(prev => prev + `\n\nSending AMMCreate transaction...`);
+        setResults(prev => prev + `\n\n${result.message}`);
         // Update AMM info after creation
         setTimeout(() => checkAMM(), 2000);
       } else {
-        setResults(prev => prev + `\n\nError creating AMM: ${amm_create.result.meta.TransactionResult}`);
+        setResults(prev => prev + `\n\n${result.message}`);
       }
       
     } catch (error) {
       console.error('Error creating AMM:', error);
       setResults(prev => prev + `\n\nError: ${error.message}`);
     } finally {
-      await client.disconnect();
       setLoading(false);
     }
   };
@@ -562,7 +439,7 @@ export default function AMM() {
                   Get New Standby Account
                 </button>
                 <button
-                  onClick={() => getAccountFromSeed('standby')}
+                  onClick={() => getAccountFromSeedHandler('standby')}
                   disabled={loading}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
                 >
@@ -617,7 +494,7 @@ export default function AMM() {
                   Get New Operational Account
                 </button>
                 <button
-                  onClick={() => getAccountFromSeed('operational')}
+                  onClick={() => getAccountFromSeedHandler('operational')}
                   disabled={loading}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
                 >
