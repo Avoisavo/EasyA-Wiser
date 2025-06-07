@@ -210,6 +210,27 @@ export default function Account() {
     }
   };
 
+  // Gather account info
+  const gatherAccountInfo = () => {
+    const accountData = `${account1.name}\n${account1.address}\n${account1.seed}\n${account2.name}\n${account2.address}\n${account2.seed}`;
+    setResults(accountData);
+  };
+
+  // Distribute account info
+  const distributeAccountInfo = () => {
+    const accountInfo = results.split('\n');
+    setAccount1({
+      name: accountInfo[0] || '',
+      address: accountInfo[1] || '',
+      seed: accountInfo[2] || ''
+    });
+    setAccount2({
+      name: accountInfo[3] || '',
+      address: accountInfo[4] || '',
+      seed: accountInfo[5] || ''
+    });
+  };
+
   // Update active account display when selection changes
   useEffect(() => {
     if ((activeAccount === 'account1' && account1.seed) || (activeAccount === 'account2' && account2.seed)) {
@@ -493,21 +514,46 @@ export default function Account() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600">Account info management coming soon...</p>
+        {/* Account Info Management */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Account Information Management</h3>
+          <div className="flex gap-4 mb-4">
+            <button
+              onClick={gatherAccountInfo}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Gather Account Info
+            </button>
+            <button
+              onClick={distributeAccountInfo}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Distribute Account Info
+            </button>
+          </div>
           
-          {results && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium mb-1">Results</label>
-              <textarea
-                value={results}
-                readOnly
-                className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50"
-                rows={6}
-              />
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium mb-1">Results</label>
+            <textarea
+              value={results}
+              onChange={(e) => setResults(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+              rows={10}
+              placeholder="Results will appear here..."
+            />
+          </div>
         </div>
+
+        {loading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span>Processing...</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
