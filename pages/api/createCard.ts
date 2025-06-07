@@ -86,7 +86,7 @@ export default async function handler(
     const cardCreationPayload = {
       card_product_token: CARD_PRODUCT_TOKEN,
       user_token: cardholderToken,
-      token: (walletAddress + password).substring(0, 36)
+      token: (walletAddress + password).substring(0, 32)
     };
 
     const cardCreationRes = await fetch(`${MARQETA_URL}/cards`, {

@@ -156,7 +156,7 @@ export default function CreatePage() {
                 </svg>
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
-                Trade Me Baby
+                Wiser
               </span>
             </Link>
 
@@ -440,7 +440,7 @@ export default function CreatePage() {
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex flex-col gap-1">
-                              <div className="text-white font-bold text-lg">TRADE ME BABY</div>
+                              <div className="text-white font-bold text-lg">WISER</div>
                               <div className="text-gray-300 text-xs">VIRTUAL CARD</div>
                             </div>
                             <div className="w-12 h-10 rounded-md flex items-center justify-center">
@@ -543,7 +543,29 @@ export default function CreatePage() {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => router.push('/card')}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Button clicked - navigating to /card');
+                            console.log('Router available:', !!router);
+                            console.log('CardDetails:', cardDetails);
+                            
+                            // Try router push first
+                            if (router && router.push) {
+                              console.log('Using router.push');
+                              router.push('/card')
+                                .then(() => console.log('Navigation successful'))
+                                .catch((error) => {
+                                  console.error('Router navigation failed:', error);
+                                  // Fallback to window location
+                                  console.log('Falling back to window.location');
+                                  window.location.href = '/card';
+                                });
+                            } else {
+                              console.log('Router not available, using window.location');
+                              window.location.href = '/card';
+                            }
+                          }}
                           className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl flex items-center justify-center space-x-2 transition-all duration-300"
                         >
                           <span>✨</span>
