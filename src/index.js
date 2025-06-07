@@ -115,6 +115,119 @@ class FixedAccountDID {
       throw error;
     }
   }
+
+  /**
+   * Submit DID URI transaction to XRPL
+   */
+  async submitDIDUriTransaction(didUri) {
+    try {
+      const didUriHex = Buffer.from(didUri, "utf8")
+        .toString("hex")
+        .toUpperCase();
+
+      // Get account info and current ledger
+      const accountResponse = await this.client.request({
+        command: "account_info",
+        account: this.wallet.address,
+        ledger_index: "validated",
+      });
+
+      const ledgerResponse = await this.client.request({
+        command: "ledger_current",
+      });
+
+      // Create transaction with URI field
+      const transaction = {
+        Account: this.wallet.address,
+        TransactionType: "DIDSet",
+        Fee: xrpToDrops("0.0001"),
+        Sequence: accountResponse.result.account_data.Sequence,
+        LastLedgerSequence: ledgerResponse.result.ledger_current_index + 15,
+        URI: didUriHex,
+      };
+
+      console.log("📄 Transaction details:", {
+        Account: transaction.Account,
+        TransactionType: transaction.TransactionType,
+        Fee: transaction.Fee,
+        Sequence: transaction.Sequence,
+        URI: didUri,
+      });
+
+      // Sign and submit
+      const signed = this.wallet.sign(transaction);
+      const submitResult = await this.client.request({
+        command: "submit",
+        tx_blob: signed.tx_blob,
+      });
+
+      console.log("📤 Submit result:", submitResult.result.engine_result);
+
+      if (submitResult.result.engine_result === "tesSUCCESS") {
+        console.log("✅ Transaction submitted successfully");
+
+        // Wait for validation
+        console.log("⏳ Waiting for validation...");
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        return signed.hash;
+      } else {
+        throw new Error(
+          `Transaction failed: ${submitResult.result.engine_result}`
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting URI transaction:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resolve DID from testnet
+   */
+  async resolveDID() {
+    try {
+      console.log(`🔍 Looking for DID on testnet...`);
+
+      const response = await this.client.request({
+        command: "account_objects",
+        account: this.wallet.address,
+        ledger_index: "validated",
+        type: "DID",
+      });
+
+      if (
+        !response.result.account_objects ||
+        response.result.account_objects.length === 0
+      ) {
+        throw new Error("No DID found for this address");
+      }
+
+      const didObject = response.result.account_objects[0];
+      let didInfo = {
+        did: `did:xrpl:${this.wallet.address}`,
+        address: this.wallet.address,
+      };
+
+      if (didObject.DIDDocument) {
+        const didDocumentString = Buffer.from(
+          didObject.DIDDocument,
+          "hex"
+        ).toString("utf8");
+        didInfo.document = JSON.parse(didDocumentString);
+      }
+
+      if (didObject.URI) {
+        didInfo.uri = Buffer.from(didObject.URI, "hex").toString("utf8");
+      }
+
+      console.log("✅ DID found on testnet!");
+      return didInfo;
+    } catch (error) {
+      console.error("❌ Error resolving DID:", error);
+      throw error;
+    }
+  }
 }
 
 module.exports = FixedAccountDID;
