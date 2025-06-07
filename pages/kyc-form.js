@@ -12,6 +12,14 @@ const KYCForm = () => {
     identityDocType: "",
     identityDocument: null,
     addressDocument: null,
+    incomeRange: "",
+    employmentStatus: "",
+    payslip: null,
+    cardholderName: "",
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    billingAddress: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -35,6 +43,47 @@ const KYCForm = () => {
     "Brazil",
     "Mexico",
   ];
+
+  const incomeRanges = [
+    "< $20,000",
+    "$20,000 - $50,000",
+    "$50,000 - $100,000",
+    "$100,000 - $200,000",
+    "$200,000+",
+  ];
+
+  const employmentStatuses = [
+    "Employed",
+    "Self-employed",
+    "Student",
+    "Unemployed",
+    "Retired",
+  ];
+
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || "";
+    const parts = [];
+
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+
+    if (parts.length) {
+      return parts.join(" ");
+    }
+
+    return v;
+  };
+
+  const formatExpiryDate = (value) => {
+    const v = value.replace(/\D/g, "");
+    if (v.length >= 2) {
+      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
+    }
+    return v;
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -85,6 +134,17 @@ const KYCForm = () => {
       newErrors.identityDocument = "Identity document is required";
     if (!formData.addressDocument)
       newErrors.addressDocument = "Address document is required";
+    if (!formData.incomeRange)
+      newErrors.incomeRange = "Income range is required";
+    if (!formData.employmentStatus)
+      newErrors.employmentStatus = "Employment status is required";
+    if (!formData.cardholderName)
+      newErrors.cardholderName = "Cardholder name is required";
+    if (!formData.cardNumber) newErrors.cardNumber = "Card number is required";
+    if (!formData.expiryDate) newErrors.expiryDate = "Expiry date is required";
+    if (!formData.cvv) newErrors.cvv = "CVV is required";
+    if (!formData.billingAddress)
+      newErrors.billingAddress = "Billing address is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -424,6 +484,234 @@ const KYCForm = () => {
                   {errors.addressDocument}
                 </span>
               )}
+            </div>
+          </div>
+
+          {/* Section 4: Financial Information */}
+          <div className="p-8 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              💰 4. Financial Information
+            </h2>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label
+                    htmlFor="incomeRange"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Income Range *
+                  </label>
+                  <select
+                    id="incomeRange"
+                    name="incomeRange"
+                    value={formData.incomeRange}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  >
+                    <option value="">Select income range</option>
+                    {incomeRanges.map((range) => (
+                      <option key={range} value={range}>
+                        {range}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.incomeRange && (
+                    <span className="text-red-600 text-sm mt-1 block">
+                      {errors.incomeRange}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="employmentStatus"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Employment Status *
+                  </label>
+                  <select
+                    id="employmentStatus"
+                    name="employmentStatus"
+                    value={formData.employmentStatus}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  >
+                    <option value="">Select status</option>
+                    {employmentStatuses.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.employmentStatus && (
+                    <span className="text-red-600 text-sm mt-1 block">
+                      {errors.employmentStatus}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="payslip"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Payslip Upload (Optional)
+                </label>
+                <input
+                  type="file"
+                  id="payslip"
+                  name="payslip"
+                  onChange={handleInputChange}
+                  accept="image/*,.pdf"
+                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
+                />
+                <small className="text-gray-500 mt-1 block">
+                  Upload your most recent payslip for verification
+                </small>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 5: Debit Card Linking Details */}
+          <div className="p-8 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              💳 5. Debit Card Linking Details
+            </h2>
+
+            <div className="space-y-6">
+              <div>
+                <label
+                  htmlFor="cardholderName"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Cardholder Name *
+                </label>
+                <input
+                  type="text"
+                  id="cardholderName"
+                  name="cardholderName"
+                  value={formData.cardholderName}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Name as it appears on card"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                />
+                <small className="text-gray-500 mt-1 block">
+                  Must match the name on your card exactly
+                </small>
+                {errors.cardholderName && (
+                  <span className="text-red-600 text-sm mt-1 block">
+                    {errors.cardholderName}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor="cardNumber"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Card Number *
+                  </label>
+                  <input
+                    type="text"
+                    id="cardNumber"
+                    name="cardNumber"
+                    value={formData.cardNumber}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="1234 5678 9012 3456"
+                    maxLength="19"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                  {errors.cardNumber && (
+                    <span className="text-red-600 text-sm mt-1 block">
+                      {errors.cardNumber}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label
+                      htmlFor="expiryDate"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Expiry Date *
+                    </label>
+                    <input
+                      type="text"
+                      id="expiryDate"
+                      name="expiryDate"
+                      value={formData.expiryDate}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="MM/YY"
+                      maxLength="5"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    />
+                    {errors.expiryDate && (
+                      <span className="text-red-600 text-sm mt-1 block">
+                        {errors.expiryDate}
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="cvv"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      CVV *
+                    </label>
+                    <input
+                      type="password"
+                      id="cvv"
+                      name="cvv"
+                      value={formData.cvv}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="123"
+                      maxLength="4"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    />
+                    {errors.cvv && (
+                      <span className="text-red-600 text-sm mt-1 block">
+                        {errors.cvv}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="billingAddress"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Billing Address *
+                </label>
+                <textarea
+                  id="billingAddress"
+                  name="billingAddress"
+                  value={formData.billingAddress}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Street address, City, State, ZIP/Postal Code, Country"
+                  rows="3"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                />
+                {errors.billingAddress && (
+                  <span className="text-red-600 text-sm mt-1 block">
+                    {errors.billingAddress}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </form>
