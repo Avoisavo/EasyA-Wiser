@@ -20,6 +20,8 @@ const KYCForm = () => {
     expiryDate: "",
     cvv: "",
     billingAddress: "",
+    dataProcessingConsent: false,
+    dataSharingConsent: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -145,6 +147,10 @@ const KYCForm = () => {
     if (!formData.cvv) newErrors.cvv = "CVV is required";
     if (!formData.billingAddress)
       newErrors.billingAddress = "Billing address is required";
+    if (!formData.dataProcessingConsent)
+      newErrors.dataProcessingConsent = "Data processing consent is required";
+    if (!formData.dataSharingConsent)
+      newErrors.dataSharingConsent = "Data sharing consent is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -713,6 +719,73 @@ const KYCForm = () => {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Section 6: Consent & Declarations */}
+          <div className="p-8 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              ✅ 6. Consent & Declarations
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="flex items-start cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="dataProcessingConsent"
+                    checked={formData.dataProcessingConsent}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 mr-3 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-gray-700">
+                    I agree to the use of my data for KYC verification *
+                  </span>
+                </label>
+                {errors.dataProcessingConsent && (
+                  <span className="text-red-600 text-sm mt-1 block ml-6">
+                    {errors.dataProcessingConsent}
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label className="flex items-start cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="dataSharingConsent"
+                    checked={formData.dataSharingConsent}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 mr-3 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-gray-700">
+                    I consent to share my information with financial
+                    institutions and crypto exchanges *
+                  </span>
+                </label>
+                {errors.dataSharingConsent && (
+                  <span className="text-red-600 text-sm mt-1 block ml-6">
+                    {errors.dataSharingConsent}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="p-8 bg-gray-50 text-center">
+            <button
+              type="submit"
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 px-8 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 text-lg"
+            >
+              🚀 Submit KYC Verification
+            </button>
+            <p className="text-gray-600 mt-4 max-w-md mx-auto text-sm leading-relaxed">
+              By submitting this form, you will begin the identity verification
+              process. Upon successful verification, a unique DID will be issued
+              to your identity.
+            </p>
           </div>
         </form>
       </div>
