@@ -167,6 +167,95 @@ export default function AMM() {
     }
   };
 
+  // Configure account (Allow Rippling)
+  const configureAccount = async () => {
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults(`===Configuring Operational Account===\n\nConnected to ${net}.`);
+      
+      const operational_wallet = xrpl.Wallet.fromSeed(operationalAccount.seed);
+      
+      const accountSet = {
+        TransactionType: "AccountSet",
+        Account: operational_wallet.address,
+        SetFlag: 8 // asfDefaultRipple
+      };
+      
+      const prepared = await client.autofill(accountSet);
+      const signed = operational_wallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      
+      if (result.result.meta.TransactionResult == "tesSUCCESS") {
+        setResults(prev => prev + `\n\nOperational account configured successfully!`);
+        setResults(prev => prev + `\nAllow Rippling: Enabled`);
+      } else {
+        setResults(prev => prev + `\n\nError configuring account: ${result.result.meta.TransactionResult}`);
+      }
+      
+    } catch (error) {
+      console.error('Error configuring account:', error);
+      setResults(prev => prev + `\n\nError: ${error.message}`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
+  // Issue tokens (Send Currency)
+  const issueTokens = async () => {
+    if (!amount || !destination || !currency) {
+      alert('Please fill in all token issuing fields');
+      return;
+    }
+    
+    setLoading(true);
+    const net = getNetworkUrl();
+    const client = new xrpl.Client(net);
+    
+    try {
+      await client.connect();
+      setResults(`===Issuing Tokens===\n\nConnected to ${net}.`);
+      
+      const operational_wallet = xrpl.Wallet.fromSeed(operationalAccount.seed);
+      
+      const payment = {
+        TransactionType: "Payment",
+        Account: operational_wallet.address,
+        Destination: destination,
+        Amount: {
+          currency: currency,
+          issuer: operational_wallet.address,
+          value: amount
+        }
+      };
+      
+      const prepared = await client.autofill(payment);
+      const signed = operational_wallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      
+      if (result.result.meta.TransactionResult == "tesSUCCESS") {
+        setResults(prev => prev + `\n\nTokens issued successfully!`);
+        setResults(prev => prev + `\nAmount: ${amount}`);
+        setResults(prev => prev + `\nCurrency: ${currency}`);
+        setResults(prev => prev + `\nFrom: ${operational_wallet.address}`);
+        setResults(prev => prev + `\nTo: ${destination}`);
+      } else {
+        setResults(prev => prev + `\n\nError issuing tokens: ${result.result.meta.TransactionResult}`);
+      }
+      
+    } catch (error) {
+      console.error('Error issuing tokens:', error);
+      setResults(prev => prev + `\n\nError: ${error.message}`);
+    } finally {
+      await client.disconnect();
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <Head>
@@ -368,9 +457,70 @@ export default function AMM() {
           </div>
         </div>
 
+        {/* Token Issuing */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Issue Tokens</h3>
+          <p className="text-gray-600 mb-4">Configure the operational account and issue tokens to the standby account.</p>
+          
+          <div className="mb-4">
+            <button
+              onClick={configureAccount}
+              disabled={loading}
+              className="px-6 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 mr-4"
+            >
+              Configure Account (Allow Rippling)
+            </button>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Amount</label>
+              <input
+                type="text"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                placeholder="e.g., 1000"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Destination (Standby)</label>
+              <input
+                type="text"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                placeholder="Standby account address"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Currency Code</label>
+              <input
+                type="text"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                placeholder="e.g., TST"
+              />
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <button
+              onClick={issueTokens}
+              disabled={loading}
+              className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+            >
+              Send Currency (Issue Tokens)
+            </button>
+          </div>
+        </div>
+
         {/* Placeholder for next features */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-center">Token issuing functionality coming next...</p>
+          <p className="text-gray-600 text-center">AMM creation and checking functionality coming next...</p>
         </div>
       </div>
     </div>
