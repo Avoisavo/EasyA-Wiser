@@ -2,22 +2,11 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import Link from 'next/link';
 import ConnectWallet from './connectwallet';
+import { useWallet } from '../contexts/WalletContext';
 
 export default function Header() {
   const [walletModalOpen, setWalletModalOpen] = useState(false);
-  const [connectedWallet, setConnectedWallet] = useState(null);
-
-  const handleSelectWallet = (walletType, address) => {
-    setConnectedWallet({
-      type: walletType,
-      address: address
-    });
-    setWalletModalOpen(false);
-  };
-
-  const handleDisconnect = () => {
-    setConnectedWallet(null);
-  };
+  const { isConnected, walletAddress, walletType, disconnect } = useWallet();
 
   // Function to truncate wallet address for display
   const truncateAddress = (address) => {
@@ -74,7 +63,7 @@ export default function Header() {
           </div>
 
           {/* Right side - Connect Wallet Button or Connected Address */}
-          {!connectedWallet ? (
+          {!isConnected ? (
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -101,16 +90,16 @@ export default function Header() {
             <div className="flex items-center space-x-2">
               <div className="px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-medium flex items-center space-x-2">
                 <img 
-                  src={connectedWallet.type === 'crossmart' ? "/crossmart.png" : "/fox.png"} 
-                  alt={connectedWallet.type} 
+                  src={walletType === 'crossmark' ? "/crossmart.png" : "/fox.png"} 
+                  alt={walletType} 
                   className="w-5 h-5"
                 />
-                <span>{truncateAddress(connectedWallet.address)}</span>
+                <span>{truncateAddress(walletAddress)}</span>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleDisconnect}
+                onClick={disconnect}
                 className="p-2 rounded-full hover:bg-red-50 text-red-500 transition-colors"
                 title="Disconnect Wallet"
               >
@@ -136,7 +125,6 @@ export default function Header() {
       <ConnectWallet
         open={walletModalOpen}
         onClose={() => setWalletModalOpen(false)}
-        onSelectWallet={handleSelectWallet}
       />
     </header>
   );
