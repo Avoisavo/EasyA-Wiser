@@ -112,6 +112,7 @@ That question sparked Wiser.
 
 ## 📁 Important Code Directory Structure
 
+```
 .
 ├── pages
 │   ├── create.js              # “Create Card” UI
@@ -126,7 +127,7 @@ That question sparked Wiser.
 │
 └── scripts.js                 # XRPL pathfinding helper
 
-
+```
 
 
 
