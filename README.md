@@ -97,11 +97,11 @@ That question sparked Wiser.
 - **MetaMask** – EVM wallet integration  
 
 ### 🔗 Blockchain & Crypto
-- **XRP Ledger (XRPL)** – Wallet integration and real-time pathfinding for crypto-to-fiat conversion  
+- **XRP Ledger (XRPL)** – Wallet integration and real-time pathfinding for crypto-to-fiat conversion 
 - **XRPL Pathfinding** – Identifies the most cost-effective route for payments converting to USD (https://testnet.xrpl.org/transactions/3E7312DCEC27BF5525F64C6E7A43B5BD4570C185C8D36EAAB6608F8915DD9E9C)
 - **Decentralized Identifiers (DIDs)** – On-chain identity tied to user identity (https://testnet.xrpl.org/transactions/29C0C4A618BBCE248DCB579262F0B65671C3B667C9EB73D1D5D33AFABC53DD0D)
 - **Axelar Bridge** – Cross-chain bridge for converting ETH/ERC-20 to XRPL-EVM tokens and back  
-- **XRPL EVM Sidechain** – EVM-compatible layer on the XRP Ledger for seamless smart-contract interoperability (https://evm-sidechain.xrpl.org/tx/0x2dabfb6012e1e346e999da921e5cb6c895ee4a98f30ff045d114f5cf52de1de2)
+- **XRPL EVM Sidechain** – EVM-compatible layer on the XRP Ledger for seamless smart-contract interoperability (https://explorer.testnet.xrplevm.org/tx/0xf15dfc434cd219c7fa9ca082ee6c295bfa15c0083e0211940649abd013af7c60)
 
 ### 💳 Payments & Card Issuance
 - **Marqeta Sandbox API** – Issues virtual debit cards, manages card lifecycle and payment flow  
