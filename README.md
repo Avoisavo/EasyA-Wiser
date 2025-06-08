@@ -102,5 +102,23 @@ That question sparked Wiser.
 - **Node.js / Express** – RESTful API and server logic   
 - **Web3 Libraries** – Wallet signing, transaction processing, XRPL operations
 
+
 ---
+
+
+
+## How We Use XRP
+
+- **Payment Network** – The payment is run on the XRPL Testnet.  
+- **Decentralized Identifier (DID)** – Used for KYC/AML when users submit their details.  
+- **XRPL PathFinding** – Used to convert crypto to the needed currency or Web2 settlement.  
+- **XRPL EVM Sidechain** – Used when users connect with MetaMask then the payment is run on the XRPL EVM Sidechain. 
+- **Axelar Bridge** – Used for cross-chain bridging between EVM and XRPL. 
+
+
+## Future Implementations
+
+- **Web3 Wise Card** – In the future, we want to evolve Wiser into a fully decentralized “Web3 Wise Card” experience, with on-chain settlement, programmable card logic, and seamless smart-contract integrations.  
+- **Card-to-Wallet Reverse Flow** – Enable users to reverse the process: top up their blockchain wallets directly from their own card, converting fiat back into crypto on-chain just-in-time.  
+
 
