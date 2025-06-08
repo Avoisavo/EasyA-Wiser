@@ -39,34 +39,60 @@ That question sparked Wiser.
 
 ---
 
-## ⚙️ How Our Project Works
+
+## Flow 1: Native XRP
 
 1. **Connect Wallet**  
-   User connects their Crossmart wallet to Wiser’s platform.  
+   - User connects Crossmart Wallet configured for XRPL.
 2. **KYC & DID Creation**  
-   User have to complete KYC and generate a Decentralized Identifier (DID) on chain.  
+   - Complete KYC → mint on-chain Decentralized Identifier (DID).
 3. **Request Debit Card**  
-   User requests a virtual debit card generated from their wallet address, issued via the Marqeta sandbox API. 
-4. **Initiate Payment at Merchant**
-   User makes a purchase using the debit card at a regular merchant.
-5. **Pathfinding & Conversion**
-   Wiser triggers XRPL’s pathfinding algorithm to find the most efficient route to convert the selected token (FT) into USD.
-6. **Just-in-Time Funding**
-The converted USD amount is sent directly to Marqeta, funding the card just-in-time to complete the payment.
+   - Issue virtual USD debit card via Marqeta sandbox API, linked to wallet address.
+4. **Initiate Payment**  
+   - User pays at merchant using the virtual card.
+5. **Pathfinding & Conversion**  
+   - Wiser calls XRPL pathfinding to convert user’s chosen FT → USD.
+6. **Just-in-Time Funding**  
+   - Send USD to Marqeta; payment settles immediately.
 
 ---
+
+## Flow 2: EVM (Metamask + Alexar Bridge)
+
+1. **Connect Wallet**  
+   - User connects MetaMask (Ethereum network).
+2. **KYC & DID Creation**  
+   - Complete KYC → mint DID on-chain (EVM).
+3. **Request Debit Card**  
+   - Issue virtual USD debit card via Marqeta sandbox API, linked to wallet address.
+4. **Initiate Payment**  
+   - User attempts purchase at merchant.
+5. **Bridge to XRPL-EVM**  
+   - Use Alexar Bridge to convert chosen ETH (or ERC-20) → XRPL-EVM tokens.
+6. **Bridge to XRPL Native**  
+   - Use Alexar Bridge again to move XRPL-EVM tokens → native XRPL tokens.
+7. **Pathfinding & Conversion**  
+   - Wiser invokes XRPL pathfinding to convert native XRPL → USD.
+8. **Just-in-Time Funding**  
+   - Deliver USD to Marqeta for card funding and payment settlement.
+
+---
+
 
 ## 🛠 Tech Stack
 
 ### 🌐 Frontend
 - **Next.js** – User interface and onboarding flows  
 - **Tailwind CSS** – Responsive and modern UI components  
-- **Crossmart Wallet** – XRPL wallet integration
+- **Crossmart Wallet** – XRPL wallet integration  
+- **MetaMask** – EVM wallet integration  
 
 ### 🔗 Blockchain & Crypto
-- **XRP Ledger (XRPL)** – Wallet integration, and real-time pathfinding for crypto-to-fiat conversion  
-- **XRPL Pathfinding** – identifies the most cost-effective route for payments converting to USD 
-- **Decentralized Identifiers (DIDs)** – On-chain identity tied to user identity
+- **XRP Ledger (XRPL)** – Wallet integration and real-time pathfinding for crypto-to-fiat conversion  
+- **XRPL Pathfinding** – Identifies the most cost-effective route for payments converting to USD  
+- **Decentralized Identifiers (DIDs)** – On-chain identity tied to user identity  
+- **Axelar Bridge** – Cross-chain bridge for converting ETH/ERC-20 to XRPL-EVM tokens and back  
+- **XRPL EVM Sidechain** – EVM-compatible layer on the XRP Ledger for seamless smart-contract interoperability  
 
 ### 💳 Payments & Card Issuance
 - **Marqeta Sandbox API** – Issues virtual debit cards, manages card lifecycle and payment flow  
