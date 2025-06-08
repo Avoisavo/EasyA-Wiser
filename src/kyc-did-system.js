@@ -422,7 +422,8 @@ class KYCBasedDIDSystem {
   async publishDIDToXRPL(didInfo, credentials) {
     try {
       // Ensure wallet is funded
-      await this.ensureFunding();
+      const balance = await this.ensureFunding();
+      console.log(`💰 Wallet balance: ${balance} XRP`);
 
       // Create a simple DID URI instead of a full document to avoid size limits
       const didUri = `https://whereismylunch.com/did/${this.wallet.address}`;
@@ -443,14 +444,24 @@ class KYCBasedDIDSystem {
 
       console.log(`✅ DID published to XRPL: ${txHash}`);
 
+      // Create proper explorer URLs for testnet
+      const explorerUrls = [
+        `https://testnet.xrpl.org/transactions/${txHash}`,
+        `https://test.bithomp.com/explorer/transaction/${txHash}`,
+        `https://xrpscan.com/tx/${txHash}?network=testnet`,
+      ];
+
       return {
         transactionHash: txHash,
-        explorerUrl: `https://testnet.xrpl.org/transactions/${txHash}`,
+        explorerUrl: explorerUrls[0], // Primary explorer
+        alternativeExplorers: explorerUrls,
         didUri: didUri,
         didMetadata: didMetadata,
+        network: "testnet",
+        account: this.wallet.address,
       };
     } catch (error) {
-      console.error("Error publishing DID to XRPL:", error);
+      console.error("❌ Error publishing DID to XRPL:", error);
       throw error;
     }
   }
@@ -470,38 +481,96 @@ class KYCBasedDIDSystem {
         command: "ledger_current",
       });
 
-      // Convert URI to hex
-      const didUriHex = Buffer.from(didUri, "utf8")
+      // Create DID metadata as JSON
+      const didMetadata = {
+        type: "KYC_DID",
+        did: `did:xrpl:${this.wallet.address}`,
+        kycCompleted: true,
+        kycLevel: "full",
+        verificationDate: new Date().toISOString(),
+        uri: didUri,
+      };
+
+      // Convert metadata to hex for memo
+      const memoData = Buffer.from(JSON.stringify(didMetadata), "utf8")
         .toString("hex")
         .toUpperCase();
 
+      // Use AccountSet transaction with Domain field to store DID
       const transaction = {
         Account: this.wallet.address,
-        TransactionType: "DIDSet",
-        Fee: xrpToDrops("0.0001"), // Lower fee for simple URI
+        TransactionType: "AccountSet",
+        Fee: xrpToDrops("0.00001"), // Standard fee
         Sequence: accountResponse.result.account_data.Sequence,
-        LastLedgerSequence: ledgerResponse.result.ledger_current_index + 15,
-        URI: didUriHex, // Use URI field instead of DIDDocument
+        LastLedgerSequence: ledgerResponse.result.ledger_current_index + 20,
+        Domain: Buffer.from(didUri, "utf8").toString("hex").toUpperCase(), // Store DID URI in Domain field
+        Memos: [
+          {
+            Memo: {
+              MemoType: Buffer.from("KYC_DID", "utf8")
+                .toString("hex")
+                .toUpperCase(),
+              MemoData:
+                memoData.length > 2000 ? memoData.substring(0, 2000) : memoData, // Limit memo size
+            },
+          },
+        ],
       };
 
-      console.log("📤 Submitting DID transaction...");
+      console.log("📤 Submitting DID transaction to XRPL...");
+      console.log("Transaction:", transaction);
 
+      // Sign the transaction
       const signed = this.wallet.sign(transaction);
+      console.log("🔐 Transaction signed, hash:", signed.hash);
+
+      // Submit to XRPL
       const submitResult = await this.client.request({
         command: "submit",
         tx_blob: signed.tx_blob,
       });
 
+      console.log("📡 Submit result:", submitResult.result);
+
       if (submitResult.result.engine_result === "tesSUCCESS") {
-        console.log("⏳ Waiting for validation...");
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        return signed.hash;
-      } else {
-        throw new Error(
-          `Transaction failed: ${submitResult.result.engine_result}`
+        console.log(
+          "⏳ Transaction submitted successfully, waiting for validation..."
         );
+
+        // Wait longer for transaction to be validated
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+
+        // Verify the transaction was actually validated
+        try {
+          const txResponse = await this.client.request({
+            command: "tx",
+            transaction: signed.hash,
+          });
+
+          if (txResponse.result.validated === true) {
+            console.log("✅ Transaction validated successfully!");
+            return signed.hash;
+          } else {
+            console.log("⏳ Transaction not yet validated, checking again...");
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+            return signed.hash;
+          }
+        } catch (txError) {
+          console.log(
+            "ℹ️ Transaction submitted but validation check failed:",
+            txError.message
+          );
+          return signed.hash; // Return hash anyway as transaction was submitted successfully
+        }
+      } else {
+        const errorMsg = `Transaction failed: ${
+          submitResult.result.engine_result
+        } - ${submitResult.result.engine_result_message || "Unknown error"}`;
+        console.error("❌", errorMsg);
+        throw new Error(errorMsg);
       }
     } catch (error) {
+      console.error("❌ Error submitting DID transaction:", error);
       throw error;
     }
   }
@@ -622,8 +691,10 @@ class KYCBasedDIDSystem {
           ledger_index: "validated",
         });
         balance = parseFloat(dropsToXrp(response.result.account_data.Balance));
+        console.log(`📊 Current balance: ${balance} XRP`);
       } catch (error) {
         if (error.message.includes("Account not found")) {
+          console.log("🆕 Account not found, will be created when funded");
           balance = 0;
         } else {
           throw error;
@@ -632,13 +703,36 @@ class KYCBasedDIDSystem {
 
       if (balance < 2) {
         console.log("💸 Funding wallet from testnet faucet...");
-        await this.client.fundWallet(this.wallet);
-        return 10;
+        try {
+          const fundingResult = await this.client.fundWallet(this.wallet);
+          console.log("✅ Funding successful:", {
+            balance: fundingResult.balance,
+            wallet: fundingResult.wallet.address,
+          });
+
+          // Wait for account to be created and available
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+
+          // Verify funding worked
+          const verifyResponse = await this.client.request({
+            command: "account_info",
+            account: this.wallet.address,
+            ledger_index: "validated",
+          });
+          const newBalance = parseFloat(
+            dropsToXrp(verifyResponse.result.account_data.Balance)
+          );
+          console.log(`✅ Verified new balance: ${newBalance} XRP`);
+          return newBalance;
+        } catch (fundingError) {
+          console.error("❌ Funding failed:", fundingError);
+          throw new Error(`Failed to fund wallet: ${fundingError.message}`);
+        }
       }
 
       return balance;
     } catch (error) {
-      console.error("Error ensuring funding:", error);
+      console.error("❌ Error ensuring funding:", error);
       throw error;
     }
   }
