@@ -105,6 +105,24 @@ That question sparked Wiser.
 
 ---
 
+## 📁 Important Code Directory Structure
+
+.
+├── pages
+│   ├── create.js              # “Create Card” UI
+│   ├── kyc-form.js            # DID submission form on XRPL
+│   ├── transaction.js         # Simulate Visa transactions 
+│   └── api
+│       ├── createCard.js      # POST handler – calls Marqeta API to create a card
+│       └── transact.js        # POST handler – simulate Visa transaction
+│
+├── components
+│   └── ConnectWallet.jsx      # Crossmart & MetaMask integrations
+│
+└── scripts.js                 # XRPL pathfinding helper
+
+
+
 
 
 ## How We Use XRP
@@ -115,6 +133,7 @@ That question sparked Wiser.
 - **XRPL EVM Sidechain** – Used when users connect with MetaMask then the payment is run on the XRPL EVM Sidechain. 
 - **Axelar Bridge** – Used for cross-chain bridging between EVM and XRPL. 
 
+---
 
 ## Future Implementations
 
