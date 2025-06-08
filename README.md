@@ -4,6 +4,8 @@
 
 Wiser gives users seamless and cost-effective access to real-world payments using their crypto holdings.
 
+![Logo](https://github.com/Avoisavo/whereismylunch/blob/main/public/Landing.png?raw=true)
+
 ---
 
 ## 💡 Inspiration
@@ -38,6 +40,9 @@ That question sparked Wiser.
 - **Transparent On-Chain Settlement** – every transaction is auditable on the blockchain.    
 
 ---
+
+![Logo](https://github.com/Avoisavo/whereismylunch/blob/main/public/Architecture.png?raw=true)
+
 
 
 ## Flow 1: Native XRP
