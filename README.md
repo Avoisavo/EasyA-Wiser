@@ -6,6 +6,10 @@ Wiser gives users seamless and cost-effective access to real-world payments usin
 
 ![Logo](https://github.com/Avoisavo/whereismylunch/blob/main/public/Landing.png?raw=true)
 
+1. Slides: https://www.canva.com/design/DAGpsHKbuIQ/I2XaqyN5kfj-0ufUsQTIEw/edit
+
+2. Video: https://drive.google.com/file/d/1lYdo_smk_ybH-0V51dauQLmhRYSKjnAz/view?usp=sharing
+
 ---
 
 ## 💡 Inspiration
