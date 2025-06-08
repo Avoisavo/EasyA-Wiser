@@ -97,7 +97,7 @@ That question sparked Wiser.
 - **MetaMask** – EVM wallet integration  
 
 ### 🔗 Blockchain & Crypto
-- **XRP Ledger (XRPL)** – Wallet integration and real-time pathfinding for crypto-to-fiat conversion 
+- **XRP Ledger (XRPL)** – Wallet integration and real-time pathfinding for crypto-to-fiat conversion (https://testnet.xrpl.org/transactions/ACA3CED7BCE5209B0BA6D0BAAAEA81455FA2B62727B5D28EAB4ABDA13E4512A7)
 - **XRPL Pathfinding** – Identifies the most cost-effective route for payments converting to USD (https://testnet.xrpl.org/transactions/3E7312DCEC27BF5525F64C6E7A43B5BD4570C185C8D36EAAB6608F8915DD9E9C)
 - **Decentralized Identifiers (DIDs)** – On-chain identity tied to user identity (https://testnet.xrpl.org/transactions/29C0C4A618BBCE248DCB579262F0B65671C3B667C9EB73D1D5D33AFABC53DD0D)
 - **Axelar Bridge** – Cross-chain bridge for converting ETH/ERC-20 to XRPL-EVM tokens and back  
