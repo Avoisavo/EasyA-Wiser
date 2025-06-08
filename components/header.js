@@ -15,7 +15,7 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/70 border-b border-blue-100">
+    <header className="absolute top-4 left-4 right-4 z-50 backdrop-blur-md bg-white/70 border border-blue-100 rounded-2xl">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Left side - Logo and Title */}
