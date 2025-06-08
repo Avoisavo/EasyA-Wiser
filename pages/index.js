@@ -182,7 +182,7 @@ export default function LandingPage() {
               transition={{ duration: 0.8 }}
             >
               <div className="text-sm text-blue-600 mb-7 font-semibold tracking-wider font-inter">
-                FOR BUSINESSES
+                WISER
               </div>
               
               <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight font-inter">

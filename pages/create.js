@@ -156,7 +156,7 @@ export default function CreatePage() {
                 </svg>
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
-                Trade Me Baby
+                WISER
               </span>
             </Link>
 
@@ -440,7 +440,7 @@ export default function CreatePage() {
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex flex-col gap-1">
-                              <div className="text-white font-bold text-lg">TRADE ME BABY</div>
+                              <div className="text-white font-bold text-lg">WISER</div>
                               <div className="text-gray-300 text-xs">VIRTUAL CARD</div>
                             </div>
                             <div className="w-12 h-10 rounded-md flex items-center justify-center">

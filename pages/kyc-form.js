@@ -375,7 +375,7 @@ const KYCForm = () => {
                 </svg>
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
-                Trade Me Baby
+                WISER
               </span>
             </Link>
 
