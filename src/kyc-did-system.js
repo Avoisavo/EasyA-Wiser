@@ -92,14 +92,19 @@ class KYCBasedDIDSystem {
    * Step 2: Verify identity documents
    */
   async verifyIdentityDocuments(documents) {
-    const requiredDocTypes = ["government_id"]; // passport, driver_license, or national_id
+    const acceptedDocTypes = ["passport", "driver_license", "national_id"]; // Accept any of these three types
     const providedTypes = documents.map((doc) => doc.type);
 
-    const hasRequiredDoc = requiredDocTypes.some((type) =>
+    const hasRequiredDoc = acceptedDocTypes.some((type) =>
       providedTypes.includes(type)
     );
     if (!hasRequiredDoc) {
-      throw new Error("At least one government-issued ID is required");
+      throw new Error("At least one identity document (passport, driver's license, or national ID) is required");
+    }
+
+    // Check if documents are actually uploaded (not empty)
+    if (!documents || documents.length === 0) {
+      throw new Error("At least one document must be uploaded");
     }
 
     // Simulate document verification process
