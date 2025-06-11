@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowRight, Check, RefreshCw, DollarSign, CreditCard as CardIcon } from "lucide-react"
+import { ArrowRight, Check, RefreshCw, DollarSign, CreditCard as CardIcon, Send } from "lucide-react"
 import Header from "../components/header";
 import { useWallet } from "../contexts/WalletContext";
+import { transferUtils } from "../utils/transferUtils";
 
 export default function SimulateTransactionPage() {
-  const { isConnected } = useWallet();
+  const { isConnected, walletAddress, walletType } = useWallet();
   
   const [cardData, setCardData] = useState(null);
   const [transactionAmount, setTransactionAmount] = useState("");
@@ -15,7 +16,13 @@ export default function SimulateTransactionPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [transactionResult, setTransactionResult] = useState(null);
+  const [ethTransferResult, setEthTransferResult] = useState(null);
   const [step, setStep] = useState(0);
+  
+  // New states for tracking progress
+  const [cardTransactionComplete, setCardTransactionComplete] = useState(false);
+  const [ethTransferComplete, setEthTransferComplete] = useState(false);
+  const [currentStep, setCurrentStep] = useState('');
 
   // Load card details from local storage on component mount
   useEffect(() => {
@@ -46,8 +53,14 @@ export default function SimulateTransactionPage() {
     
     setIsProcessing(true);
     setError(null);
+    setCardTransactionComplete(false);
+    setEthTransferComplete(false);
 
     try {
+      // Step 1: Process Card Transaction
+      setCurrentStep('Processing card transaction...');
+      console.log('🏦 Starting card transaction...');
+      
       const response = await fetch('/api/transact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,29 +76,84 @@ export default function SimulateTransactionPage() {
         throw new Error(data.error || 'Failed to simulate transaction');
       }
 
-      setTransactionResult({
+      const cardResult = {
         success: data.success,
         id: data.transaction.token,
         timestamp: new Date().toISOString(),
         amount: data.transaction.amount,
         merchant: data.transaction.merchant,
-        xrpl: data.xrpl || null // Include XRPL results
-      });
-      
-      setStep(2); // Move to result step
+        xrpl: data.xrpl || null
+      };
+
+      setTransactionResult(cardResult);
+      setCardTransactionComplete(true);
+      console.log('✅ Card transaction successful');
+
+      // Step 2: Process ETH Transfer (only if user has MetaMask/compatible wallet)
+      if (walletType === 'metamask' || walletAddress.startsWith('0x')) {
+        setCurrentStep('Please sign the transaction in MetaMask...');
+        console.log('💰 Waiting for user to sign ETH transfer...');
+        
+        try {
+          // This will wait for user to sign AND for transaction to be confirmed
+          const ethResult = await transferUtils.sendToTargetAddress(walletAddress);
+          
+          setCurrentStep('Transaction signed! Waiting for blockchain confirmation...');
+          console.log('📝 Transaction signed, waiting for confirmation...');
+          
+          // Additional wait for confirmation if needed
+          if (ethResult.transactionHash) {
+            setCurrentStep('Confirming transaction on blockchain...');
+            // The transferUtils should handle waiting for confirmation
+          }
+          
+          setEthTransferResult(ethResult);
+          setEthTransferComplete(true);
+          console.log('✅ ETH transfer confirmed on blockchain:', ethResult);
+          
+          // Wait 7 seconds before showing results
+          setCurrentStep('Transaction completed! Preparing results...');
+          setTimeout(() => {
+            setStep(2);
+          }, 7000);
+          
+        } catch (ethError) {
+          console.error('❌ ETH transfer failed:', ethError);
+          setEthTransferResult({
+            success: false,
+            error: ethError.message
+          });
+          setEthTransferComplete(true);
+          
+          // Wait 7 seconds even for failed transactions
+          setTimeout(() => {
+            setStep(2);
+          }, 7000);
+        }
+      } else {
+        console.log('ℹ️ Skipping ETH transfer - not a MetaMask wallet');
+        setEthTransferComplete(true);
+        setStep(2);
+      }
 
     } catch (err) {
+      console.error('❌ Transaction process failed:', err);
       setError(err.message);
     } finally {
       setIsProcessing(false);
+      setCurrentStep('');
     }
   };
 
   const resetTransaction = () => {
     setTransactionResult(null);
+    setEthTransferResult(null);
     setTransactionAmount("");
     setStep(0);
     setError(null);
+    setCardTransactionComplete(false);
+    setEthTransferComplete(false);
+    setCurrentStep('');
   };
 
   return (
@@ -95,7 +163,7 @@ export default function SimulateTransactionPage() {
       <header className="container mx-auto px-4 py-8 pt-24">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800 text-center">Simulate a Card Transaction</h1>
         <p className="text-gray-600 text-center mt-2 max-w-2xl mx-auto">
-          Use your newly created virtual card to make a test payment.
+          Use your newly created virtual card to make a test payment and send ETH.
         </p>
       </header>
 
@@ -185,8 +253,44 @@ export default function SimulateTransactionPage() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Processing Status */}
+                  {isProcessing && (
+                    <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl">
+                      <div className="flex items-center">
+                        <RefreshCw className="w-5 h-5 mr-3 animate-spin text-yellow-600" />
+                        <div>
+                          <p className="font-medium text-yellow-800">Processing...</p>
+                          <p className="text-sm text-yellow-700">{currentStep}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Progress indicators */}
+                      <div className="mt-4 space-y-2">
+                        <div className="flex items-center">
+                          <div className={`w-4 h-4 rounded-full mr-3 ${cardTransactionComplete ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                          <span className={`text-sm ${cardTransactionComplete ? 'text-green-700' : 'text-gray-600'}`}>
+                            Card Transaction {cardTransactionComplete ? '✓' : '...'}
+                          </span>
+                        </div>
+                        {(walletType === 'metamask' || walletAddress.startsWith('0x')) && (
+                          <div className="flex items-center">
+                            <div className={`w-4 h-4 rounded-full mr-3 ${ethTransferComplete ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                            <span className={`text-sm ${ethTransferComplete ? 'text-green-700' : 'text-gray-600'}`}>
+                              ETH Transfer {ethTransferComplete ? '✓' : '...'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex space-x-4">
-                    <button onClick={() => setStep(0)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl">
+                    <button 
+                      onClick={() => setStep(0)} 
+                      disabled={isProcessing}
+                      className={`flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
                       Back
                     </button>
                     <button
@@ -222,13 +326,15 @@ export default function SimulateTransactionPage() {
               </motion.div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">
-                  {transactionResult.success ? "Transaction Successful!" : "Transaction Failed"}
+                  {transactionResult.success ? "Transaction Processed!" : "Transaction Failed"}
                 </h2>
                 <p className="text-gray-600 mt-2">
                   {transactionResult.success ? "Your test payment has been processed." : (error || "An unknown error occurred.")}
                 </p>
               </div>
+              
               <div className="bg-gray-50 p-4 rounded-xl text-left space-y-2">
+                <h4 className="font-semibold text-gray-700 mb-3">Card Transaction</h4>
                 <div className="flex justify-between">
                   <p className="text-gray-600">Transaction ID:</p>
                   <p className="font-mono text-gray-800 text-xs">{transactionResult.id}</p>
@@ -241,6 +347,7 @@ export default function SimulateTransactionPage() {
                   <p className="text-gray-600">Date:</p>
                   <p className="text-gray-800">{new Date(transactionResult.timestamp).toLocaleString()}</p>
                 </div>
+                
                 {transactionResult.xrpl && transactionResult.xrpl.hash && (
                   <>
                     <hr className="my-3 border-gray-300" />
@@ -257,7 +364,52 @@ export default function SimulateTransactionPage() {
                     </div>
                   </>
                 )}
+                
+                {ethTransferResult && (
+                  <>
+                    <hr className="my-3 border-gray-300" />
+                    <h4 className="font-semibold text-gray-700">ETH Transfer</h4>
+                    {ethTransferResult.success ? (
+                      <>
+                        <div className="flex justify-between">
+                          <p className="text-gray-600">Status:</p>
+                          <p className="text-green-600 font-medium">✅ Successful</p>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-gray-600">Amount:</p>
+                          <p className="text-gray-800">{ethTransferResult.amount} ETH</p>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-gray-600">To:</p>
+                          <p className="font-mono text-gray-800 text-xs">{ethTransferResult.recipient.slice(0, 10)}...</p>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-gray-600">Arbitrum Explorer:</p>
+                          <a 
+                            href={ethTransferResult.explorerUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                          >
+                            View Transaction
+                          </a>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between">
+                          <p className="text-gray-600">Status:</p>
+                          <p className="text-red-600 font-medium">❌ Failed</p>
+                        </div>
+                        <div className="bg-red-50 border border-red-200 p-3 rounded mt-2">
+                          <p className="text-red-700 text-sm">{ethTransferResult.error}</p>
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
+              
               <button
                 onClick={resetTransaction}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl"
