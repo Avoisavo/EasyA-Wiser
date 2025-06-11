@@ -21,15 +21,11 @@ export default async function handler(
   }
 
   try {
-    const { firstName, lastName, email, walletAddress, password } = req.body;
+    const { firstName, lastName, email, walletAddress } = req.body;
 
     // Basic validation
-    if (!firstName || !lastName || !email || !walletAddress || !password) {
-      return res.status(400).json({ error: 'First name, last name, email, wallet address, and password are required.' });
-    }
-    
-    if (typeof password !== 'string' || !/^\d{6}$/.test(password)) {
-      return res.status(400).json({ error: 'Password must be a 6-digit number.' });
+    if (!firstName || !lastName || !email || !walletAddress) {
+      return res.status(400).json({ error: 'First name, last name, email, and wallet address are required.' });
     }
 
     let cardholderToken;
@@ -83,65 +79,33 @@ export default async function handler(
     }
     
     // --- Create Card Step ---
-    const cardCreationPayload = {
+    const cardPayload = {
       card_product_token: CARD_PRODUCT_TOKEN,
       user_token: cardholderToken,
-      token: (walletAddress + password).substring(5, 33)
+      token: walletAddress.substring(0, 36) // Use first 36 characters of wallet address
     };
 
-    const cardCreationRes = await fetch(`${MARQETA_URL}/cards`, {
+    const cardRes = await fetch(`${MARQETA_URL}/cards`, {
       method: 'POST',
       headers: {
         'Authorization': auth,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(cardCreationPayload)
+      body: JSON.stringify(cardPayload)
     });
 
-    const cardCreationBody = await cardCreationRes.text();
-    const cardCreationData = cardCreationBody ? JSON.parse(cardCreationBody) : {};
+    const cardBody = await cardRes.text();
+    const cardData = cardBody ? JSON.parse(cardBody) : {};
 
-    if (!cardCreationRes.ok) {
-      console.error("Marqeta Card Creation API Error:", cardCreationData);
-      return res.status(cardCreationRes.status).json({
-        error: `Failed to create card: ${cardCreationData.error_message || JSON.stringify(cardCreationData)}`
+    if (!cardRes.ok) {
+      console.error("Marqeta Card API Error:", cardData);
+      return res.status(cardRes.status).json({
+        error: `Failed to create card: ${cardData.error_message || JSON.stringify(cardData)}`
       });
     }
     
-    const cardToken = cardCreationData.token;
-
-    // Get PAN (card number) and CVV
-    const panRes = await fetch(`${MARQETA_URL}/cards/${cardToken}/showpan`, {
-      method: 'GET',
-      headers: { 'Authorization': auth }
-    });
-
-    let panData = {};
-    if (panRes.ok) {
-      panData = await panRes.json();
-    } else {
-      console.error("Marqeta Show PAN API Error:", await panRes.text());
-      // We don't fail the whole request, but PAN/CVV will be missing
-    }
-
     // On success, return the new card's data
-    return res.status(201).json({ 
-      success: true,
-      cardholder: {
-        token: cardholderToken,
-        firstName,
-        lastName,
-        email
-      },
-      card: {
-        token: cardToken,
-        lastFour: cardCreationData.last_four,
-        expiration: cardCreationData.expiration,
-        state: cardCreationData.state,
-        pan: (panData as any).pan || null,
-        cvv: (panData as any).cvv_number || null
-      }
-    });
+    return res.status(201).json({ success: true, card: cardData });
 
   } catch (error) {
     console.error('Internal Server Error:', error);

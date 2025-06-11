@@ -2,11 +2,22 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import Link from 'next/link';
 import ConnectWallet from './connectwallet';
-import { useWallet } from '../contexts/WalletContext';
 
 export default function Header() {
   const [walletModalOpen, setWalletModalOpen] = useState(false);
-  const { isConnected, walletAddress, walletType, disconnect } = useWallet();
+  const [connectedWallet, setConnectedWallet] = useState(null);
+
+  const handleSelectWallet = (walletType, address) => {
+    setConnectedWallet({
+      type: walletType,
+      address: address
+    });
+    setWalletModalOpen(false);
+  };
+
+  const handleDisconnect = () => {
+    setConnectedWallet(null);
+  };
 
   // Function to truncate wallet address for display
   const truncateAddress = (address) => {
@@ -15,7 +26,7 @@ export default function Header() {
   };
 
   return (
-    <header className="absolute top-4 left-4 right-4 z-50 backdrop-blur-md bg-white/70 border border-blue-100 rounded-2xl">
+    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/70 border-b border-blue-100">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Left side - Logo and Title */}
@@ -37,12 +48,33 @@ export default function Header() {
               </svg>
             </div>
             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
-              Wiser
+              Trade Me Baby
             </span>
           </Link>
 
+          {/* Middle - Navigation Buttons */}
+          <div className="flex items-center space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300"
+            >
+              Generate a Card
+            </motion.button>
+            
+            <Link href="/kyc-form">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 transition-all duration-300"
+              >
+                KYC
+              </motion.button>
+            </Link>
+          </div>
+
           {/* Right side - Connect Wallet Button or Connected Address */}
-          {!isConnected ? (
+          {!connectedWallet ? (
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -69,16 +101,16 @@ export default function Header() {
             <div className="flex items-center space-x-2">
               <div className="px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-medium flex items-center space-x-2">
                 <img 
-                  src={walletType === 'crossmark' ? "/crossmart.png" : "/fox.png"} 
-                  alt={walletType} 
+                  src={connectedWallet.type === 'crossmart' ? "/crossmart.png" : "/fox.png"} 
+                  alt={connectedWallet.type} 
                   className="w-5 h-5"
                 />
-                <span>{truncateAddress(walletAddress)}</span>
+                <span>{truncateAddress(connectedWallet.address)}</span>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={disconnect}
+                onClick={handleDisconnect}
                 className="p-2 rounded-full hover:bg-red-50 text-red-500 transition-colors"
                 title="Disconnect Wallet"
               >
@@ -104,7 +136,8 @@ export default function Header() {
       <ConnectWallet
         open={walletModalOpen}
         onClose={() => setWalletModalOpen(false)}
+        onSelectWallet={handleSelectWallet}
       />
     </header>
   );
-} 
+}
