@@ -1,115 +1,395 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import { motion } from "framer-motion";
+import { useCallback } from "react";
+import { useRouter } from "next/router";
+import Particles from "react-tsparticles";
+import { loadSlim } from "tsparticles-slim";
+import { SmoothCursor } from "../components/ui/smooth-cursor";
+import { Inter } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export default function LandingPage() {
+  const router = useRouter();
+  const particlesInit = useCallback(async (engine) => {
+    await loadSlim(engine);
+  }, []);
 
-export default function Home() {
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <>
+      <SmoothCursor />
+      <div
+        className={`relative min-h-screen overflow-hidden flex items-center justify-center cursor-none bg-white ${inter.className}`}
+      >
+        {/* Dynamic Particles Background */}
+        <Particles
+          id="tsparticles"
+          init={particlesInit}
+          options={{
+            background: {
+              color: {
+                value: "transparent",
+              },
+            },
+            fpsLimit: 120,
+            particles: {
+              color: {
+                value: ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"],
+              },
+              links: {
+                color: "#2563eb",
+                distance: 150,
+                enable: true,
+                opacity: 0.1,
+                width: 1,
+              },
+              move: {
+                enable: true,
+                outModes: {
+                  default: "bounce",
+                },
+                random: true,
+                speed: { min: 0.5, max: 2 },
+                straight: false,
+                direction: "none",
+                attract: {
+                  enable: true,
+                  rotateX: 600,
+                  rotateY: 1200,
+                },
+              },
+              number: {
+                density: {
+                  enable: true,
+                  area: 1000,
+                },
+                value: 40,
+              },
+              opacity: {
+                value: 0.2,
+              },
+              shape: {
+                type: "circle",
+              },
+              size: {
+                value: { min: 1, max: 2 },
+              },
+            },
+            detectRetina: true,
+          }}
+          className="absolute inset-0"
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {/* Geometric Pattern Background */}
+        <div className="absolute inset-0">
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-white"
+            animate={{
+              background: [
+                "linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #ffffff 100%)",
+                "linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #eff6ff 100%)",
+                "linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #ffffff 100%)",
+              ],
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute right-0 top-0 w-1/2 h-full opacity-20"
+            animate={{
+              x: [0, 20, 0],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-l from-blue-600/20 to-transparent"
+              animate={{
+                background: [
+                  "linear-gradient(270deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%)",
+                  "linear-gradient(270deg, rgba(59, 130, 246, 0.3) 0%, transparent 100%)",
+                  "linear-gradient(270deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%)",
+                ],
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <motion.svg
+              className="absolute inset-0 w-full h-full"
+              viewBox="0 0 400 800"
+              animate={{
+                rotate: [0, 360],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{
+                rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+                scale: { duration: 8, repeat: Infinity, ease: "easeInOut" },
+              }}
+            >
+              <defs>
+                <pattern
+                  id="dots"
+                  x="0"
+                  y="0"
+                  width="20"
+                  height="20"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <motion.circle
+                    cx="10"
+                    cy="10"
+                    r="1"
+                    fill="#2563eb"
+                    animate={{
+                      opacity: [0.3, 0.8, 0.3],
+                      r: [1, 1.5, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#dots)" />
+            </motion.svg>
+          </motion.div>
+
+          {/* Additional animated background elements */}
+          <motion.div
+            className="absolute left-0 top-1/4 w-1/3 h-1/2 opacity-10"
+            animate={{
+              rotate: [0, -360],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              rotate: { duration: 25, repeat: Infinity, ease: "linear" },
+              scale: { duration: 10, repeat: Infinity, ease: "easeInOut" },
+            }}
           >
-            Read our docs
-          </a>
+            <div className="w-full h-full bg-gradient-radial from-blue-400/20 to-transparent rounded-full blur-3xl"></div>
+          </motion.div>
+
+          <motion.div
+            className="absolute right-1/4 bottom-1/4 w-1/4 h-1/4 opacity-10"
+            animate={{
+              rotate: [0, 360],
+              x: [0, 50, 0],
+              y: [0, -30, 0],
+            }}
+            transition={{
+              rotate: { duration: 15, repeat: Infinity, ease: "linear" },
+              x: { duration: 8, repeat: Infinity, ease: "easeInOut" },
+              y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+            }}
+          >
+            <div className="w-full h-full bg-gradient-radial from-blue-600/30 to-transparent rounded-full blur-2xl"></div>
+          </motion.div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Main Content */}
+        <div className="relative z-10 max-w-6xl mx-auto px-6 flex items-center justify-between ml-25">
+          <div className="flex-1 max-w-2xl ml-4">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="text-sm text-blue-600 mb-7 font-semibold tracking-wider font-inter">
+                FOR BUSINESSES
+              </div>
+
+              <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight font-inter">
+                Take back <span className="text-blue-600">control</span> of your{" "}
+                <span className="text-blue-600">capital</span>.
+              </h1>
+
+              <div className="text-gray-600 text-lg mb-4 font-inter font-normal">
+                Secure your treasury and scale your business globally
+              </div>
+              <div className="text-gray-600 text-lg mb-8 font-inter font-normal">
+                with a truly self-custodial account that only you control.
+              </div>
+
+              <div className="text-gray-500 mb-8 font-inter font-medium">
+                You hold the keys. Always.
+              </div>
+
+              <motion.button
+                className="bg-blue-600 text-white px-8 py-3 rounded-full text-lg font-bold hover:bg-blue-500 transition-all duration-300 shadow-lg hover:shadow-blue-400/20 font-inter tracking-wide"
+                onClick={() => router.push("/kyc-form")}
+                whileHover={{
+                  scale: 1.1,
+                  boxShadow: "0 20px 50px rgba(37, 99, 235, 0.3)",
+                }}
+                whileTap={{ scale: 0.95 }}
+              >
+                JOIN NOW
+              </motion.button>
+            </motion.div>
+          </div>
+
+          {/* Mobile Phone Mockup */}
+          <div className="hidden lg:block flex-1 flex justify-end pr-0 pl-40">
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1, delay: 0.3 }}
+              className="relative"
+            >
+              {/* Shining background */}
+              <motion.div
+                className="absolute inset-0 w-96 h-[650px] -translate-x-8 -translate-y-6 rounded-full opacity-40"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at center, rgba(37, 99, 235, 0.3) 0%, rgba(59, 130, 246, 0.2) 40%, rgba(96, 165, 250, 0.1) 70%, transparent 100%)",
+                  filter: "blur(30px)",
+                }}
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.4, 0.6, 0.4],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              <div className="relative z-10 w-80 h-[600px] bg-gray-900 rounded-[40px] p-6 shadow-2xl border border-gray-700">
+                <div className="w-full h-full bg-black rounded-[30px] p-4 overflow-hidden">
+                  <div className="text-white text-center">
+                    <motion.div
+                      className="text-sm text-gray-400 mb-4 font-inter font-medium"
+                      animate={{ opacity: [0.7, 1, 0.7] }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      Transfers - Send
+                    </motion.div>
+                    <motion.div
+                      className="text-2xl font-bold mb-6 font-inter"
+                      animate={{ y: [0, -2, 0] }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      Recipient Country
+                    </motion.div>
+
+                    {/* Country flags mockup */}
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      {[
+                        { flag: "🇬🇧", color: "bg-red-500", delay: 0 },
+                        { flag: "🇺🇸", color: "bg-blue-500", delay: 0.2 },
+                        { flag: "🇪🇺", color: "bg-green-500", delay: 0.4 },
+                        { flag: "🇯🇵", color: "bg-purple-500", delay: 0.6 },
+                        { flag: "🇨🇳", color: "bg-yellow-500", delay: 0.8 },
+                        { flag: "🇮🇳", color: "bg-pink-500", delay: 1.0 },
+                      ].map((item, index) => (
+                        <motion.div
+                          key={index}
+                          className={`w-12 h-12 ${item.color} rounded-full mx-auto flex items-center justify-center text-white font-bold`}
+                          animate={{
+                            scale: [1, 1.1, 1],
+                            rotate: [0, 5, 0, -5, 0],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: item.delay,
+                          }}
+                          whileHover={{ scale: 1.2, rotate: 15 }}
+                        >
+                          {item.flag}
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <motion.div
+                      className="space-y-3 text-left"
+                      animate={{ x: [0, 2, 0] }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <div className="flex justify-between text-sm font-inter">
+                        <span className="text-gray-400 font-medium">
+                          Method
+                        </span>
+                        <span className="font-medium">Bank Transfer</span>
+                      </div>
+                      <div className="flex justify-between text-sm font-inter">
+                        <span className="text-gray-400 font-medium">Rate</span>
+                        <motion.span
+                          className="font-semibold"
+                          animate={{ color: ["#ffffff", "#fbbf24", "#ffffff"] }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                        >
+                          1.2405 USD
+                        </motion.span>
+                      </div>
+                      <div className="flex justify-between text-sm font-inter">
+                        <span className="text-gray-400 font-medium">
+                          Amount
+                        </span>
+                        <span className="font-semibold">$250.00</span>
+                      </div>
+                    </motion.div>
+
+                    <motion.button
+                      className="w-full bg-yellow-400 text-black py-3 rounded-full font-bold mt-6 font-inter tracking-wide"
+                      animate={{
+                        backgroundColor: ["#fbbf24", "#f59e0b", "#fbbf24"],
+                        scale: [1, 1.02, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Start Live
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <style jsx global>{`
+          * {
+            cursor: none !important;
+          }
+          @keyframes gradient {
+            0% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
+          }
+          .animate-gradient {
+            animation: gradient 15s ease infinite;
+            background-size: 200% 200%;
+          }
+        `}</style>
+      </div>
+    </>
   );
 }

@@ -1,69 +1,113 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/header';
+import Card3D from '../components/Card3D';
+import { useRouter } from 'next/router';
 
-const cardWidth = 400;
-const cardHeight = 250;
+// Floating text component
+const FloatingText = ({ text, style, delay = 0 }) => {
+  const [opacity, setOpacity] = useState(0);
 
-const cardStyle = {
-  width: `${cardWidth}px`,
-  height: `${cardHeight}px`,
-  borderRadius: '20px',
-  boxShadow: '0 8px 40px 10px #2563eb, 0 2px 8px rgba(0,0,0,0.08)',
-  background: 'linear-gradient(135deg, #e0f2fe 0%, #60a5fa 60%, #2563eb 100%)',
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  perspective: '1200px',
-  cursor: 'grab',
-  color: '#1e293b',
-  border: '1.5px solid rgba(37,99,235,0.12)',
-  overflow: 'hidden',
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const interval = setInterval(() => {
+        // Fade in
+        setOpacity(1);
+        setTimeout(() => {
+          // Fade out after 2 seconds
+          setOpacity(0);
+        }, 2000);
+      }, 4000); // Repeat every 4 seconds (2s visible + 2s hidden)
+
+      return () => clearInterval(interval);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        opacity,
+        transition: 'opacity 1.5s ease-in-out',
+        color: '#1e293b',
+        fontFamily: 'sans-serif',
+        fontWeight: 600,
+        fontSize: '14px',
+        pointerEvents: 'none',
+        zIndex: 10,
+        ...style,
+      }}
+    >
+      {text}
+    </div>
+  );
 };
 
-const shineStyle = {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  background: 'linear-gradient(120deg, rgba(255,255,255,0.18) 0%, rgba(96,165,250,0.04) 60%, rgba(255,255,255,0.0) 100%)',
-  borderRadius: '20px',
-  pointerEvents: 'none',
-  zIndex: 10,
-};
+export default function CardPage() {
+  const router = useRouter();
+  const [cardData, setCardData] = useState(null);
 
-function CreditCard3D() {
-  const [rotation, setRotation] = useState(0);
-  const dragging = useRef(false);
-  const lastX = useRef(0);
+  useEffect(() => {
+    const storedData = localStorage.getItem('newCardDetails');
+    if (storedData) {
+      setCardData(JSON.parse(storedData));
+    } else {
+      router.push('/create');
+    }
+  }, [router]);
 
-  const handleMouseDown = (e) => {
-    dragging.current = true;
-    lastX.current = e.clientX;
-    document.body.style.cursor = 'grabbing';
-  };
+  const ActionButton = ({ children }) => (
+    <button
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)',
+        border: 'none',
+        borderRadius: '30px',
+        padding: '15px 40px',
+        color: 'white',
+        fontSize: '18px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        backdropFilter: 'blur(10px)',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.transform = 'translateY(-2px)';
+        e.target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+      }}
+    >
+      {children}
+    </button>
+  );
 
-  const handleMouseUp = () => {
-    dragging.current = false;
-    document.body.style.cursor = 'default';
-  };
-
-  const handleMouseMove = (e) => {
-    if (!dragging.current) return;
-    const deltaX = e.clientX - lastX.current;
-    setRotation((r) => r + deltaX * 0.8);
-    lastX.current = e.clientX;
-  };
-
-  React.useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  });
+  const CardInfoPanel = ({ type, status, limit }) => (
+    <div style={{
+      background: 'rgba(255,255,255,0.1)',
+      backdropFilter: 'blur(10px)',
+      borderRadius: '20px',
+      padding: '30px',
+      color: 'white',
+      width: '300px',
+    }}>
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ fontSize: '14px', opacity: 0.7, marginBottom: '5px' }}>Card Type:</div>
+        <div style={{ fontSize: '18px', fontWeight: '500' }}>{type}</div>
+      </div>
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ fontSize: '14px', opacity: 0.7, marginBottom: '5px' }}>Status:</div>
+        <div style={{ fontSize: '18px', fontWeight: '500' }}>{status}</div>
+      </div>
+      <div>
+        <div style={{ fontSize: '14px', opacity: 0.7, marginBottom: '5px' }}>Spending Limit:</div>
+        <div style={{ fontSize: '18px', fontWeight: '500' }}>${limit.toLocaleString()}</div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -73,226 +117,224 @@ function CreditCard3D() {
         width: '100vw',
         position: 'relative',
         overflow: 'hidden',
-        background: 'radial-gradient(circle at 60% 30%, #f0f9ff 0%, #e0e7ef 80%, #dbeafe 100%)',
+        background: 'linear-gradient(135deg, #f0f9ff 0%, #3b82f6 100%)',
       }}>
-        {/* Grid overlay */}
+        {/* Stars/sparkles background */}
         <div style={{
           position: 'absolute',
           inset: 0,
+          background: 'radial-gradient(circle at 60% 30%, rgba(255,255,255,0.2) 0%, rgba(30,58,138,0.1) 100%)',
+          opacity: 0.9,
           zIndex: 0,
-          backgroundImage: `linear-gradient(to right, rgba(37,99,235,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(37,99,235,0.04) 1px, transparent 1px)`,
-          backgroundSize: '32px 32px',
-          pointerEvents: 'none',
         }} />
-        {/* Vignette overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          background: 'radial-gradient(circle at 60% 30%, rgba(96,165,250,0.10) 0%, rgba(255,255,255,0.7) 80%)',
-          pointerEvents: 'none',
-        }} />
-        <div
-          style={{
-            ...cardStyle,
-            transform: `translate(-50%, -50%) rotateY(${rotation}deg)`,
-            transition: dragging.current ? 'none' : 'box-shadow 0.3s',
-            zIndex: 2,
-          }}
-          onMouseDown={handleMouseDown}
-        >
+
+        {cardData ? (
           <div style={{
-            width: '100%',
-            height: '100%',
             position: 'relative',
-            transformStyle: 'preserve-3d',
+            zIndex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            paddingTop: '50px',
+            gap: '40px',
+            width: '100%',
+            maxWidth: '1200px',
+            margin: '0 auto',
           }}>
-            {/* Front Side */}
+            {/* Main content container */}
             <div style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              backfaceVisibility: 'hidden',
               display: 'flex',
-              flexDirection: 'column',
+              width: '100%',
               justifyContent: 'space-between',
-              padding: '24px',
-              color: '#1e293b',
-              fontFamily: 'sans-serif',
-              fontWeight: 600,
-              letterSpacing: '1.2px',
-              zIndex: 2,
-              fontSize: '13px',
-              textShadow: '0 0 8px #60a5fa, 0 0 2px #fff',
+              alignItems: 'center',
+              padding: '0 40px',
+              position: 'relative',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {/* Chip */}
-                <div style={{
-                  width: 32,
-                  height: 24,
-                  borderRadius: 6,
-                  background: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)',
-                  boxShadow: '0 1px 4px #60a5fa',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <div style={{
-                    width: 20,
-                    height: 14,
-                    borderRadius: 3,
-                    background: 'linear-gradient(90deg, #fff 0%, #60a5fa 100%)',
-                    opacity: 0.7,
-                  }} />
+              {/* Left side - Card display */}
+              <div style={{ 
+                flex: '0 0 auto', 
+                marginRight: '60px',
+                marginTop: '100px',
+                marginLeft: '400px', // Changed from -40px to 40px to move card right
+                transform: 'scale(0.95)',
+              }}>
+                <Card3D cardDetails={cardData.card} cardholder={cardData.cardholder} />
+              </div>
+              
+              {/* Right side - Card info */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '20px',
+                padding: '40px',
+                color: '#000000',
+                width: '400px',
+                marginRight: '20px',
+                marginTop: '100px',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+                fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+              }}>
+                <div style={{ marginBottom: '25px' }}>
+                  <div style={{ 
+                    opacity: 0.6, 
+                    marginBottom: '8px',
+                    fontSize: '18px',
+                    letterSpacing: '0.5px',
+                    color: '#000000',
+                    fontWeight: '400',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}>
+                    <span role="img" aria-label="credit card" style={{ fontSize: '20px' }}>💳</span>
+                    Card Type:
+                  </div>
+                  <div style={{ 
+                    fontWeight: '600',
+                    fontSize: '26px',
+                    color: '#000000',
+                    letterSpacing: '-0.5px',
+                  }}>Virtual Visa</div>
                 </div>
-                <span style={{ fontSize: 16, color: '#1e293b', fontWeight: 700, textShadow: '0 0 8px #60a5fa' }}>CREDIT CARD</span>
-              </div>
-              <div style={{ fontSize: 18, letterSpacing: '2.5px', margin: '18px 0 0 0', color: '#1e293b', textShadow: '0 0 8px #60a5fa' }}>
-                1234  5678  9012  3455
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                <div style={{ marginBottom: '25px' }}>
+                  <div style={{ 
+                    opacity: 0.6, 
+                    marginBottom: '8px',
+                    fontSize: '18px',
+                    letterSpacing: '0.5px',
+                    color: '#000000',
+                    fontWeight: '400',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}>
+                    <span role="img" aria-label="check mark" style={{ fontSize: '20px' }}>✅</span>
+                    Status:
+                  </div>
+                  <div style={{ 
+                    fontWeight: '600',
+                    fontSize: '26px',
+                    color: '#000000',
+                    letterSpacing: '-0.5px',
+                  }}>Active</div>
+                </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#1e293b', opacity: 0.8 }}>VALID THRU</div>
-                  <div style={{ fontSize: 12, color: '#1e293b', fontWeight: 700 }}>09/27</div>
-                  <div style={{ fontSize: 12, color: '#1e293b', fontWeight: 700 }}>CARDHOLDER</div>
-                </div>
-                {/* Blue Mastercard logo */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: -8 }}>
-                  <div style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, #60a5fa 60%, #e0f2fe 100%)',
-                    opacity: 0.9,
-                    position: 'relative',
-                    left: 5,
-                    boxShadow: '0 0 12px #60a5fa',
-                  }} />
-                  <div style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, #2563eb 60%, #e0f2fe 100%)',
-                    opacity: 0.9,
-                    position: 'relative',
-                    right: 5,
-                    marginLeft: -10,
-                    boxShadow: '0 0 12px #2563eb',
-                  }} />
+                  <div style={{ 
+                    opacity: 0.6, 
+                    marginBottom: '8px',
+                    fontSize: '18px',
+                    letterSpacing: '0.5px',
+                    color: '#000000',
+                    fontWeight: '400',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}>
+                    <span role="img" aria-label="money bag" style={{ fontSize: '20px' }}>💰</span>
+                    Spending Limit:
+                  </div>
+                  <div style={{ 
+                    fontWeight: '600',
+                    fontSize: '26px',
+                    color: '#000000',
+                    letterSpacing: '-0.5px',
+                  }}>${(5000).toLocaleString()}</div>
                 </div>
               </div>
-              <div style={shineStyle}></div>
             </div>
-            {/* Back Side */}
+
+            {/* Action buttons */}
             <div style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
-              background: 'linear-gradient(135deg, #e0f2fe 0%, #60a5fa 60%, #2563eb 100%)',
-              borderRadius: '20px',
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              padding: '24px',
-              zIndex: 1,
-              fontSize: '13px',
-              boxSizing: 'border-box',
-              boxShadow: '0 0 32px 0 #60a5fa55',
-              color: '#1e293b',
-              textShadow: '0 0 8px #60a5fa, 0 0 2px #fff',
+              gap: '30px',
+              marginTop: '30px',
+              width: '100%',
+              justifyContent: 'center',
             }}>
-              {/* Customer service info */}
-              <div style={{
-                width: '100%',
-                color: '#1e293b',
-                fontSize: 12,
-                marginBottom: 8,
-                fontWeight: 500,
-                textShadow: '0 1px 2px #60a5fa',
-              }}>
-                For customer service, call <span style={{color:'#2563eb'}}>+123-456-789</span> or <span style={{color:'#2563eb'}}>+0-000-123-456</span>
-              </div>
-              {/* Black magnetic stripe */}
-              <div style={{
-                width: '100%',
-                height: 28,
-                background: 'linear-gradient(120deg, #cbd5e1 80%, #e0e7ef 100%)',
-                borderRadius: 6,
-                marginBottom: 18,
-                boxShadow: '0 2px 8px #2563eb22',
-              }} />
-              {/* Signature and CVV row */}
-              <div style={{
-                width: '100%',
+              <button style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                border: 'none',
+                borderRadius: '30px',
+                padding: '20px 35px',
+                color: '#1a1a1a',
+                cursor: 'pointer',
+                backdropFilter: 'blur(20px)',
+                transition: 'all 0.3s ease',
+                width: '220px',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+                fontFamily: 'SF Pro Display, Inter, system-ui, -apple-system, sans-serif',
                 display: 'flex',
-                flexDirection: 'row',
+                flexDirection: 'column',
                 alignItems: 'center',
-                margin: '12px 0 0 0',
+                justifyContent: 'center',
+                gap: '6px',
               }}>
-                {/* Signature box with blue lines */}
-                <div style={{
-                  flex: 1,
-                  height: 22,
-                  background: '#fff',
-                  borderRadius: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  paddingLeft: 8,
-                  color: '#2563eb',
-                  fontSize: 11,
-                  fontFamily: 'monospace',
-                  boxShadow: '0 1px 2px #60a5fa33',
-                  border: '1px solid #e0e7ef',
-                  letterSpacing: 2,
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}>
-                  {/* Blue signature lines */}
-                  <div style={{position:'absolute',top:4,left:8,right:8,height:2,background:'#60a5fa'}}></div>
-                  <div style={{position:'absolute',top:10,left:8,right:8,height:2,background:'#60a5fa'}}></div>
-                  <div style={{position:'absolute',top:16,left:8,right:8,height:2,background:'#60a5fa'}}></div>
+                <span role="img" aria-label="send money" style={{ fontSize: '24px' }}>💸</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', opacity: 0.6, fontWeight: '500', letterSpacing: '1px', textTransform: 'uppercase' }}>Send</span>
+                  <span style={{ fontSize: '18px', fontWeight: '600', letterSpacing: '-0.5px' }}>Money</span>
                 </div>
-                {/* CVV */}
-                <div style={{
-                  width: 40,
-                  height: 22,
-                  background: '#fff',
-                  borderRadius: 3,
-                  marginLeft: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#2563eb',
-                  fontWeight: 700,
-                  fontSize: 13,
-                  fontFamily: 'monospace',
-                  boxShadow: '0 1px 2px #60a5fa33',
-                  border: '1px solid #e0e7ef',
-                }}>
-                  123
-                </div>
-              </div>
-              {/* Placeholder text */}
-              <div style={{
-                marginTop: 18,
-                color: '#1e293b',
-                fontSize: 11,
-                opacity: 0.9,
-                lineHeight: 1.4,
-                textShadow: '0 1px 2px #60a5fa',
+              </button>
+              <button style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                border: 'none',
+                borderRadius: '30px',
+                padding: '20px 35px',
+                color: '#1a1a1a',
+                cursor: 'pointer',
+                backdropFilter: 'blur(20px)',
+                transition: 'all 0.3s ease',
+                width: '220px',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+                fontFamily: 'SF Pro Display, Inter, system-ui, -apple-system, sans-serif',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
               }}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat<br />
-                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
-              </div>
-              <div style={shineStyle}></div>
+                <span role="img" aria-label="add funds" style={{ fontSize: '24px' }}>💰</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', opacity: 0.6, fontWeight: '500', letterSpacing: '1px', textTransform: 'uppercase' }}>Add</span>
+                  <span style={{ fontSize: '18px', fontWeight: '600', letterSpacing: '-0.5px' }}>Funds</span>
+                </div>
+              </button>
+              <button style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                border: 'none',
+                borderRadius: '30px',
+                padding: '20px 35px',
+                color: '#1a1a1a',
+                cursor: 'pointer',
+                backdropFilter: 'blur(20px)',
+                transition: 'all 0.3s ease',
+                width: '220px',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+                fontFamily: 'SF Pro Display, Inter, system-ui, -apple-system, sans-serif',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+              }}>
+                <span role="img" aria-label="settings" style={{ fontSize: '24px' }}>⚙️</span>
+                <span style={{ fontSize: '18px', fontWeight: '600', letterSpacing: '-0.5px' }}>Settings</span>
+              </button>
             </div>
           </div>
-        </div>
+        ) : (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            fontFamily: 'sans-serif',
+          }}>
+            Loading card details...
+          </div>
+        )}
       </div>
     </>
   );
 }
-
-export default CreditCard3D;

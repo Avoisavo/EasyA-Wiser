@@ -1,12 +1,27 @@
 import React, { useState } from "react";
-import Header from "../components/header";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import ConnectWallet from "../components/connectwallet";
+import { useWallet } from "../contexts/WalletContext";
 
 const KYCForm = () => {
+  const router = useRouter();
+  // Header state
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const { isConnected, walletAddress, walletType, disconnect } = useWallet();
+
+  // Function to truncate wallet address for display
+  const truncateAddress = (address) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState(null);
-  const totalSteps = 6;
+  const totalSteps = 5;
 
   const [formData, setFormData] = useState({
     // Personal Information - aligned with backend
@@ -40,14 +55,6 @@ const KYCForm = () => {
     sourceOfFunds: "",
     employer: "",
     payslip: null,
-
-    // Debit Card Information - aligned with backend
-    cardholderName: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    bankName: "",
-    cardType: "debit",
 
     // Consents - aligned with backend
     dataProcessing: false,
@@ -107,55 +114,14 @@ const KYCForm = () => {
     "other",
   ];
 
-  const cardTypes = ["debit", "credit"];
-
-  // Format card number with spaces
-  const formatCardNumber = (value) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(" ");
-    }
-
-    return v;
-  };
-
-  // Format expiry date MM/YY
-  const formatExpiryDate = (value) => {
-    const v = value.replace(/\D/g, "");
-    if (v.length >= 2) {
-      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
-    }
-    return v;
-  };
-
   const handleInputChange = (e) => {
+    e.preventDefault(); // Prevent any default form behaviors
     const { name, value, type, checked, files } = e.target;
-
-    let processedValue = value;
-
-    // Special formatting for specific fields
-    if (name === "cardNumber") {
-      processedValue = formatCardNumber(value);
-    } else if (name === "expiryDate") {
-      processedValue = formatExpiryDate(value);
-    }
 
     setFormData((prev) => ({
       ...prev,
       [name]:
-        type === "checkbox"
-          ? checked
-          : type === "file"
-          ? files[0]
-          : processedValue,
+        type === "checkbox" ? checked : type === "file" ? files[0] : value,
     }));
 
     // Clear error when user starts typing
@@ -167,86 +133,11 @@ const KYCForm = () => {
     }
   };
 
-  // Step validation functions
+  // Step validation functions - DISABLED FOR EASY TESTING
   const validateStep = (step) => {
-    const newErrors = {};
-
-    switch (step) {
-      case 1: // Personal Information
-        if (!formData.firstName.trim())
-          newErrors.firstName = "First name is required";
-        if (!formData.lastName.trim())
-          newErrors.lastName = "Last name is required";
-        if (!formData.dateOfBirth)
-          newErrors.dateOfBirth = "Date of birth is required";
-        if (!formData.nationality)
-          newErrors.nationality = "Nationality is required";
-        if (!formData.phoneNumber.trim())
-          newErrors.phoneNumber = "Phone number is required";
-        if (!formData.email.trim())
-          newErrors.email = "Email address is required";
-        if (!formData.gender) newErrors.gender = "Gender is required";
-        if (!formData.placeOfBirth.trim())
-          newErrors.placeOfBirth = "Place of birth is required";
-        break;
-
-      case 2: // Identity Documents
-        if (!formData.identityDocType)
-          newErrors.identityDocType = "Identity document type is required";
-        if (!formData.identityDocument)
-          newErrors.identityDocument = "Identity document file is required";
-        if (!formData.documentNumber.trim())
-          newErrors.documentNumber = "Document number is required";
-        break;
-
-      case 3: // Address Verification
-        if (!formData.street.trim())
-          newErrors.street = "Street address is required";
-        if (!formData.city.trim()) newErrors.city = "City is required";
-        if (!formData.state.trim())
-          newErrors.state = "State/Province is required";
-        if (!formData.postalCode.trim())
-          newErrors.postalCode = "Postal code is required";
-        if (!formData.country) newErrors.country = "Country is required";
-        if (!formData.addressDocument)
-          newErrors.addressDocument = "Address proof document is required";
-        break;
-
-      case 4: // Financial Information
-        if (!formData.incomeRange)
-          newErrors.incomeRange = "Income range is required";
-        if (!formData.employmentStatus)
-          newErrors.employmentStatus = "Employment status is required";
-        if (!formData.sourceOfFunds)
-          newErrors.sourceOfFunds = "Source of funds is required";
-        break;
-
-      case 5: // Debit Card
-        if (!formData.cardholderName.trim())
-          newErrors.cardholderName = "Cardholder name is required";
-        if (!formData.cardNumber.replace(/\s/g, ""))
-          newErrors.cardNumber = "Card number is required";
-        if (!formData.bankName.trim())
-          newErrors.bankName = "Bank name is required";
-        if (!formData.cardType) newErrors.cardType = "Card type is required";
-        break;
-
-      case 6: // Consents
-        if (!formData.dataProcessing)
-          newErrors.dataProcessing = "Data processing consent is required";
-        if (!formData.kycVerification)
-          newErrors.kycVerification = "KYC verification consent is required";
-        if (!formData.dataSharing)
-          newErrors.dataSharing = "Data sharing consent is required";
-        if (!formData.termsOfService)
-          newErrors.termsOfService = "Terms of service acceptance is required";
-        if (!formData.privacyPolicy)
-          newErrors.privacyPolicy = "Privacy policy acceptance is required";
-        break;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // No validation - always return true for easy testing
+    setErrors({});
+    return true;
   };
 
   const nextStep = () => {
@@ -261,31 +152,56 @@ const KYCForm = () => {
 
   // Backend integration function
   const submitKYCData = async (kycData) => {
-    // For now, simulate the backend call - replace with actual implementation
-    console.log("Submitting KYC Data:", kycData);
+    console.log("🚀 Submitting KYC Data to real system:", kycData);
 
-    // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      const response = await fetch("/api/kyc-submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(kycData),
+      });
 
-    // Simulate successful response
-    return {
-      did: "did:xrpl:rAbCdEfGhIjKlMnOpQrStUvWxYz1234567890",
-      address: "rAbCdEfGhIjKlMnOpQrStUvWxYz1234567890",
-      verifiableCredentials: ["identity", "address", "financial", "payment"],
-      publishResult: {
-        transactionHash: "ABC123DEF456",
-        explorerUrl: "https://testnet.xrpl.org/transactions/ABC123DEF456",
-      },
-      kycTimestamp: new Date().toISOString(),
-    };
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}`);
+      }
+
+      if (!result.success) {
+        throw new Error(result.error || "KYC submission failed");
+      }
+
+      console.log("✅ KYC submission successful:", result);
+
+      return {
+        did: result.did,
+        address: result.address,
+        verifiableCredentials: result.verifiableCredentials,
+        publishResult: result.publishResult,
+        kycTimestamp: result.kycTimestamp,
+      };
+    } catch (error) {
+      console.error("❌ KYC submission failed:", error);
+      throw new Error(`KYC submission failed: ${error.message}`);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Only allow submission on step 5 when explicitly clicked
+    if (currentStep !== totalSteps) {
+      console.log("❌ Submit blocked - not on final step");
+      return;
+    }
+
     if (!validateStep(currentStep)) {
       return;
     }
 
+    console.log("🚀 Manual form submission triggered");
     setIsSubmitting(true);
     try {
       // Transform frontend data to backend format
@@ -349,11 +265,6 @@ const KYCForm = () => {
         sourceOfFunds: formData.sourceOfFunds,
         employer: formData.employer,
       },
-      cardData: {
-        cardNumber: formData.cardNumber.replace(/\s/g, ""),
-        bankName: formData.bankName,
-        cardType: formData.cardType,
-      },
       consents: {
         dataProcessing: formData.dataProcessing,
         kycVerification: formData.kycVerification,
@@ -371,22 +282,37 @@ const KYCForm = () => {
     { number: 2, title: "Identity Documents", icon: "🆔" },
     { number: 3, title: "Address Verification", icon: "🏠" },
     { number: 4, title: "Financial Information", icon: "💰" },
-    { number: 5, title: "Payment Method", icon: "💳" },
-    { number: 6, title: "Consents", icon: "✅" },
+    { number: 5, title: "Consents", icon: "✅" },
   ];
 
   return (
     <>
       <style jsx>{`
         @keyframes fade-in {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         @keyframes bounce-in {
-          0% { opacity: 0; transform: scale(0.3); }
-          50% { opacity: 1; transform: scale(1.05); }
-          70% { transform: scale(0.9); }
-          100% { transform: scale(1); }
+          0% {
+            opacity: 0;
+            transform: scale(0.3);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.05);
+          }
+          70% {
+            transform: scale(0.9);
+          }
+          100% {
+            transform: scale(1);
+          }
         }
         .animate-fade-in {
           animation: fade-in 0.6s ease-out;
@@ -398,7 +324,105 @@ const KYCForm = () => {
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
       `}</style>
-      <Header />
+
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/70 border-b border-blue-100">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left side - Logo and Title */}
+            <Link
+              href="/card"
+              className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity duration-200"
+            >
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
+                Trade Me Baby
+              </span>
+            </Link>
+
+            {/* Right side - Connect Wallet Button or Connected Address */}
+            {!isConnected ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-2 rounded-full border border-blue-200 bg-white/80 text-blue-700 font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center space-x-2"
+                onClick={() => setWalletModalOpen(true)}
+              >
+                <svg
+                  className="w-5 h-5 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <span>Connect Wallet</span>
+              </motion.button>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <div className="px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-medium flex items-center space-x-2">
+                  <img
+                    src={
+                      walletType === "crossmark" ? "/crossmart.png" : "/fox.png"
+                    }
+                    alt={walletType}
+                    className="w-5 h-5"
+                  />
+                  <span>{truncateAddress(walletAddress)}</span>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={disconnect}
+                  className="p-2 rounded-full hover:bg-red-50 text-red-500 transition-colors"
+                  title="Disconnect Wallet"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </motion.button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+      <ConnectWallet
+        open={walletModalOpen}
+        onClose={() => setWalletModalOpen(false)}
+      />
+
       <div className="min-h-screen bg-white py-8 px-4 pt-24">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -433,15 +457,25 @@ const KYCForm = () => {
                 </h3>
                 <div className="text-sm text-left space-y-3 text-gray-700">
                   <div className="flex items-center p-2 bg-white rounded-lg shadow-sm">
-                    <span className="font-semibold text-blue-600 w-20">DID:</span>
-                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded flex-1">{submitResult.did}</span>
+                    <span className="font-semibold text-blue-600 w-20">
+                      DID:
+                    </span>
+                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded flex-1">
+                      {submitResult.did}
+                    </span>
                   </div>
                   <div className="flex items-center p-2 bg-white rounded-lg shadow-sm">
-                    <span className="font-semibold text-blue-600 w-20">Address:</span>
-                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded flex-1">{submitResult.address}</span>
+                    <span className="font-semibold text-blue-600 w-20">
+                      Address:
+                    </span>
+                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded flex-1">
+                      {submitResult.address}
+                    </span>
                   </div>
                   <div className="flex items-center p-2 bg-white rounded-lg shadow-sm">
-                    <span className="font-semibold text-blue-600 w-20">Transaction:</span>
+                    <span className="font-semibold text-blue-600 w-20">
+                      Transaction:
+                    </span>
                     <a
                       href={submitResult.publishResult.explorerUrl}
                       target="_blank"
@@ -452,9 +486,25 @@ const KYCForm = () => {
                     </a>
                   </div>
                   <div className="flex items-center p-2 bg-white rounded-lg shadow-sm">
-                    <span className="font-semibold text-blue-600 w-20">Credentials:</span>
-                    <span className="text-green-600 font-semibold">{submitResult.verifiableCredentials.length} types issued</span>
+                    <span className="font-semibold text-blue-600 w-20">
+                      Credentials:
+                    </span>
+                    <span className="text-green-600 font-semibold">
+                      {submitResult.verifiableCredentials.length} types issued
+                    </span>
                   </div>
+                </div>
+
+                {/* Generate Debit Card Button */}
+                <div className="mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => router.push("/create")}
+                    className="w-full px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl font-semibold text-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300 flex items-center justify-center space-x-3"
+                  >
+                    <span>💳 Generate Debit Card</span>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -506,26 +556,29 @@ const KYCForm = () => {
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium text-blue-600">
-                    Step {currentStep} of {totalSteps}: {steps[currentStep - 1]?.title}
+                    Step {currentStep} of {totalSteps}:{" "}
+                    {steps[currentStep - 1]?.title}
                   </p>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                          <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-500 shadow-sm"
-                        style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-                      ></div>
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-500 shadow-sm"
+                      style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
 
               {/* Form Content */}
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-blue-200 transform hover:shadow-3xl transition-all duration-300">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => e.preventDefault()}>
                   <div className="p-8">
                     {/* Step 1: Personal Information */}
                     {currentStep === 1 && (
                       <div className="animate-fade-in">
                         <h2 className="text-2xl font-bold text-blue-600 mb-6 flex items-center">
-                          <span className="text-3xl mr-3 animate-bounce">👤</span>
+                          <span className="text-3xl mr-3 animate-bounce">
+                            👤
+                          </span>
                           Personal Information
                         </h2>
                         <div className="space-y-6">
@@ -535,7 +588,7 @@ const KYCForm = () => {
                                 htmlFor="firstName"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                First Name *
+                                First Name
                               </label>
                               <input
                                 type="text"
@@ -545,18 +598,13 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.firstName && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.firstName}
-                                </span>
-                              )}
                             </div>
                             <div>
                               <label
                                 htmlFor="lastName"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Last Name *
+                                Last Name
                               </label>
                               <input
                                 type="text"
@@ -566,11 +614,6 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.lastName && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.lastName}
-                                </span>
-                              )}
                             </div>
                           </div>
 
@@ -580,7 +623,7 @@ const KYCForm = () => {
                                 htmlFor="dateOfBirth"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Date of Birth *
+                                Date of Birth
                               </label>
                               <input
                                 type="date"
@@ -590,18 +633,13 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.dateOfBirth && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.dateOfBirth}
-                                </span>
-                              )}
                             </div>
                             <div>
                               <label
                                 htmlFor="gender"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Gender *
+                                Gender
                               </label>
                               <select
                                 id="gender"
@@ -617,11 +655,6 @@ const KYCForm = () => {
                                   </option>
                                 ))}
                               </select>
-                              {errors.gender && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.gender}
-                                </span>
-                              )}
                             </div>
                           </div>
 
@@ -631,7 +664,7 @@ const KYCForm = () => {
                                 htmlFor="nationality"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Nationality *
+                                Nationality
                               </label>
                               <select
                                 id="nationality"
@@ -647,18 +680,13 @@ const KYCForm = () => {
                                   </option>
                                 ))}
                               </select>
-                              {errors.nationality && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.nationality}
-                                </span>
-                              )}
                             </div>
                             <div>
                               <label
                                 htmlFor="placeOfBirth"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Place of Birth *
+                                Place of Birth
                               </label>
                               <input
                                 type="text"
@@ -668,11 +696,6 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.placeOfBirth && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.placeOfBirth}
-                                </span>
-                              )}
                             </div>
                           </div>
 
@@ -682,7 +705,7 @@ const KYCForm = () => {
                                 htmlFor="email"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Email Address *
+                                Email Address
                               </label>
                               <input
                                 type="email"
@@ -692,18 +715,13 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.email && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.email}
-                                </span>
-                              )}
                             </div>
                             <div>
                               <label
                                 htmlFor="phoneNumber"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Phone Number *
+                                Phone Number
                               </label>
                               <input
                                 type="tel"
@@ -713,11 +731,6 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.phoneNumber && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.phoneNumber}
-                                </span>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -728,13 +741,15 @@ const KYCForm = () => {
                     {currentStep === 2 && (
                       <div className="animate-fade-in">
                         <h2 className="text-2xl font-bold text-blue-600 mb-6 flex items-center">
-                          <span className="text-3xl mr-3 animate-bounce">🆔</span>
+                          <span className="text-3xl mr-3 animate-bounce">
+                            🆔
+                          </span>
                           Identity Documents
                         </h2>
                         <div className="space-y-6">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-3">
-                              Document Type *
+                              Document Type
                             </label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               {[
@@ -763,11 +778,6 @@ const KYCForm = () => {
                                 </label>
                               ))}
                             </div>
-                            {errors.identityDocType && (
-                              <span className="text-red-600 text-sm">
-                                {errors.identityDocType}
-                              </span>
-                            )}
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -776,7 +786,7 @@ const KYCForm = () => {
                                 htmlFor="documentNumber"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Document Number *
+                                Document Number
                               </label>
                               <input
                                 type="text"
@@ -786,11 +796,6 @@ const KYCForm = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.documentNumber && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.documentNumber}
-                                </span>
-                              )}
                             </div>
                           </div>
 
@@ -799,7 +804,7 @@ const KYCForm = () => {
                               htmlFor="identityDocument"
                               className="block text-sm font-medium text-gray-700 mb-2"
                             >
-                              Upload Document *
+                              Upload Document
                             </label>
                             <input
                               type="file"
@@ -809,11 +814,6 @@ const KYCForm = () => {
                               accept="image/*,.pdf"
                               className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 cursor-pointer text-black"
                             />
-                            {errors.identityDocument && (
-                              <span className="text-red-600 text-sm">
-                                {errors.identityDocument}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -821,7 +821,7 @@ const KYCForm = () => {
 
                     {/* Step 3: Address Verification */}
                     {currentStep === 3 && (
-                      <>
+                      <div className="animate-fade-in">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6">
                           🏠 Address Verification
                         </h2>
@@ -831,7 +831,7 @@ const KYCForm = () => {
                               htmlFor="street"
                               className="block text-sm font-medium text-gray-700 mb-2"
                             >
-                              Street Address *
+                              Street Address
                             </label>
                             <input
                               type="text"
@@ -842,11 +842,6 @@ const KYCForm = () => {
                               placeholder="123 Main Street"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
-                            {errors.street && (
-                              <span className="text-red-600 text-sm">
-                                {errors.street}
-                              </span>
-                            )}
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -855,7 +850,7 @@ const KYCForm = () => {
                                 htmlFor="city"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                City *
+                                City
                               </label>
                               <input
                                 type="text"
@@ -866,18 +861,13 @@ const KYCForm = () => {
                                 placeholder="New York"
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.city && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.city}
-                                </span>
-                              )}
                             </div>
                             <div>
                               <label
                                 htmlFor="state"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                State/Province *
+                                State/Province
                               </label>
                               <input
                                 type="text"
@@ -888,11 +878,6 @@ const KYCForm = () => {
                                 placeholder="NY"
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.state && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.state}
-                                </span>
-                              )}
                             </div>
                           </div>
 
@@ -902,7 +887,7 @@ const KYCForm = () => {
                                 htmlFor="postalCode"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Postal Code *
+                                Postal Code
                               </label>
                               <input
                                 type="text"
@@ -913,18 +898,13 @@ const KYCForm = () => {
                                 placeholder="10001"
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                               />
-                              {errors.postalCode && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.postalCode}
-                                </span>
-                              )}
                             </div>
                             <div>
                               <label
                                 htmlFor="country"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Country *
+                                Country
                               </label>
                               <select
                                 id="country"
@@ -940,11 +920,6 @@ const KYCForm = () => {
                                   </option>
                                 ))}
                               </select>
-                              {errors.country && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.country}
-                                </span>
-                              )}
                             </div>
                           </div>
 
@@ -953,11 +928,11 @@ const KYCForm = () => {
                               htmlFor="addressDocument"
                               className="block text-sm font-medium text-gray-700 mb-2"
                             >
-                              Upload Address Proof *
+                              Upload Address Proof
                             </label>
                             <p className="text-gray-600 mb-3 text-sm">
-                              Upload a utility bill, bank statement, or government
-                              letter (dated within last 3 months)
+                              Upload a utility bill, bank statement, or
+                              government letter (dated within last 3 months)
                             </p>
                             <input
                               type="file"
@@ -967,19 +942,14 @@ const KYCForm = () => {
                               accept="image/*,.pdf"
                               className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 cursor-pointer text-black"
                             />
-                            {errors.addressDocument && (
-                              <span className="text-red-600 text-sm">
-                                {errors.addressDocument}
-                              </span>
-                            )}
                           </div>
                         </div>
-                      </>
+                      </div>
                     )}
 
                     {/* Step 4: Financial Information */}
                     {currentStep === 4 && (
-                      <>
+                      <div className="animate-fade-in">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6">
                           💰 Financial Information
                         </h2>
@@ -990,7 +960,7 @@ const KYCForm = () => {
                                 htmlFor="incomeRange"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Annual Income Range *
+                                Annual Income Range
                               </label>
                               <select
                                 id="incomeRange"
@@ -1003,22 +973,19 @@ const KYCForm = () => {
                                 {incomeRanges.map((range) => (
                                   <option key={range} value={range}>
                                     $
-                                    {range.replace("-", " - $").replace("+", "+")}
+                                    {range
+                                      .replace("-", " - $")
+                                      .replace("+", "+")}
                                   </option>
                                 ))}
                               </select>
-                              {errors.incomeRange && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.incomeRange}
-                                </span>
-                              )}
                             </div>
                             <div>
                               <label
                                 htmlFor="employmentStatus"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Employment Status *
+                                Employment Status
                               </label>
                               <select
                                 id="employmentStatus"
@@ -1035,11 +1002,6 @@ const KYCForm = () => {
                                   </option>
                                 ))}
                               </select>
-                              {errors.employmentStatus && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.employmentStatus}
-                                </span>
-                              )}
                             </div>
                           </div>
 
@@ -1049,7 +1011,7 @@ const KYCForm = () => {
                                 htmlFor="sourceOfFunds"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                               >
-                                Source of Funds *
+                                Source of Funds
                               </label>
                               <select
                                 id="sourceOfFunds"
@@ -1066,11 +1028,6 @@ const KYCForm = () => {
                                   </option>
                                 ))}
                               </select>
-                              {errors.sourceOfFunds && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.sourceOfFunds}
-                                </span>
-                              )}
                             </div>
                             <div>
                               <label
@@ -1111,177 +1068,24 @@ const KYCForm = () => {
                             />
                           </div>
                         </div>
-                      </>
+                      </div>
                     )}
 
-                    {/* Step 5: Payment Method */}
+                    {/* Step 5: Consents */}
                     {currentStep === 5 && (
-                      <>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                          💳 Payment Method
-                        </h2>
-                        <div className="space-y-6">
-                          <div>
-                            <label
-                              htmlFor="cardholderName"
-                              className="block text-sm font-medium text-gray-700 mb-2"
-                            >
-                              Cardholder Name *
-                            </label>
-                            <input
-                              type="text"
-                              id="cardholderName"
-                              name="cardholderName"
-                              value={formData.cardholderName}
-                              onChange={handleInputChange}
-                              placeholder="Name as it appears on card"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                            />
-                            {errors.cardholderName && (
-                              <span className="text-red-600 text-sm">
-                                {errors.cardholderName}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                              <label
-                                htmlFor="cardNumber"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                Card Number *
-                              </label>
-                              <input
-                                type="text"
-                                id="cardNumber"
-                                name="cardNumber"
-                                value={formData.cardNumber}
-                                onChange={handleInputChange}
-                                placeholder="1234 5678 9012 3456"
-                                maxLength="19"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              />
-                              {errors.cardNumber && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.cardNumber}
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <label
-                                htmlFor="bankName"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                Bank Name *
-                              </label>
-                              <input
-                                type="text"
-                                id="bankName"
-                                name="bankName"
-                                value={formData.bankName}
-                                onChange={handleInputChange}
-                                placeholder="Chase, Bank of America, etc."
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              />
-                              {errors.bankName && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.bankName}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                              <label
-                                htmlFor="cardType"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                Card Type *
-                              </label>
-                              <select
-                                id="cardType"
-                                name="cardType"
-                                value={formData.cardType}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              >
-                                {cardTypes.map((type) => (
-                                  <option key={type} value={type}>
-                                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                                  </option>
-                                ))}
-                              </select>
-                              {errors.cardType && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.cardType}
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <label
-                                htmlFor="expiryDate"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                Expiry Date *
-                              </label>
-                              <input
-                                type="text"
-                                id="expiryDate"
-                                name="expiryDate"
-                                value={formData.expiryDate}
-                                onChange={handleInputChange}
-                                placeholder="MM/YY"
-                                maxLength="5"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              />
-                              {errors.expiryDate && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.expiryDate}
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <label
-                                htmlFor="cvv"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                              >
-                                CVV *
-                              </label>
-                              <input
-                                type="password"
-                                id="cvv"
-                                name="cvv"
-                                value={formData.cvv}
-                                onChange={handleInputChange}
-                                placeholder="123"
-                                maxLength="4"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                              />
-                              {errors.cvv && (
-                                <span className="text-red-600 text-sm">
-                                  {errors.cvv}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Step 6: Consents */}
-                    {currentStep === 6 && (
                       <div className="animate-fade-in">
                         <h2 className="text-2xl font-bold text-blue-600 mb-6 flex items-center">
-                          <span className="text-3xl mr-3 animate-bounce">✅</span>
+                          <span className="text-3xl mr-3 animate-bounce">
+                            ✅
+                          </span>
                           Consents & Declarations
                         </h2>
                         <div className="space-y-6">
                           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                             <p className="text-blue-800 text-sm">
                               Please review and accept all consents below to
-                              complete your KYC verification and create your DID.
+                              complete your KYC verification and create your
+                              DID.
                             </p>
                           </div>
 
@@ -1296,19 +1100,14 @@ const KYCForm = () => {
                               />
                               <div>
                                 <span className="font-medium text-gray-800">
-                                  Data Processing Consent *
+                                  Data Processing Consent
                                 </span>
                                 <p className="text-sm text-gray-600 mt-1">
-                                  I consent to the processing of my personal data
-                                  for KYC verification purposes.
+                                  I consent to the processing of my personal
+                                  data for KYC verification purposes.
                                 </p>
                               </div>
                             </label>
-                            {errors.dataProcessing && (
-                              <span className="text-red-600 text-sm ml-6">
-                                {errors.dataProcessing}
-                              </span>
-                            )}
 
                             <label className="flex items-start cursor-pointer p-4 border rounded-lg hover:bg-gray-50">
                               <input
@@ -1320,7 +1119,7 @@ const KYCForm = () => {
                               />
                               <div>
                                 <span className="font-medium text-gray-800">
-                                  KYC Verification Consent *
+                                  KYC Verification Consent
                                 </span>
                                 <p className="text-sm text-gray-600 mt-1">
                                   I agree to undergo identity verification and
@@ -1328,11 +1127,6 @@ const KYCForm = () => {
                                 </p>
                               </div>
                             </label>
-                            {errors.kycVerification && (
-                              <span className="text-red-600 text-sm ml-6">
-                                {errors.kycVerification}
-                              </span>
-                            )}
 
                             <label className="flex items-start cursor-pointer p-4 border rounded-lg hover:bg-gray-50">
                               <input
@@ -1344,19 +1138,15 @@ const KYCForm = () => {
                               />
                               <div>
                                 <span className="font-medium text-gray-800">
-                                  Data Sharing Consent *
+                                  Data Sharing Consent
                                 </span>
                                 <p className="text-sm text-gray-600 mt-1">
-                                  I consent to share my verified information with
-                                  authorized financial institutions and exchanges.
+                                  I consent to share my verified information
+                                  with authorized financial institutions and
+                                  exchanges.
                                 </p>
                               </div>
                             </label>
-                            {errors.dataSharing && (
-                              <span className="text-red-600 text-sm ml-6">
-                                {errors.dataSharing}
-                              </span>
-                            )}
 
                             <label className="flex items-start cursor-pointer p-4 border rounded-lg hover:bg-gray-50">
                               <input
@@ -1368,7 +1158,7 @@ const KYCForm = () => {
                               />
                               <div>
                                 <span className="font-medium text-gray-800">
-                                  Terms of Service *
+                                  Terms of Service
                                 </span>
                                 <p className="text-sm text-gray-600 mt-1">
                                   I have read and agree to the{" "}
@@ -1382,11 +1172,6 @@ const KYCForm = () => {
                                 </p>
                               </div>
                             </label>
-                            {errors.termsOfService && (
-                              <span className="text-red-600 text-sm ml-6">
-                                {errors.termsOfService}
-                              </span>
-                            )}
 
                             <label className="flex items-start cursor-pointer p-4 border rounded-lg hover:bg-gray-50">
                               <input
@@ -1398,7 +1183,7 @@ const KYCForm = () => {
                               />
                               <div>
                                 <span className="font-medium text-gray-800">
-                                  Privacy Policy *
+                                  Privacy Policy
                                 </span>
                                 <p className="text-sm text-gray-600 mt-1">
                                   I have read and agree to the{" "}
@@ -1412,19 +1197,14 @@ const KYCForm = () => {
                                 </p>
                               </div>
                             </label>
-                            {errors.privacyPolicy && (
-                              <span className="text-red-600 text-sm ml-6">
-                                {errors.privacyPolicy}
-                              </span>
-                            )}
                           </div>
 
                           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
                             <p className="text-green-800 text-sm">
                               🎉 Once you submit, your KYC verification will be
                               processed and your unique DID (Decentralized
-                              Identity) will be created and published to the XRPL
-                              network.
+                              Identity) will be created and published to the
+                              XRPL network.
                             </p>
                           </div>
                         </div>
@@ -1438,7 +1218,7 @@ const KYCForm = () => {
                       type="button"
                       onClick={prevStep}
                       disabled={currentStep === 1}
-                                              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
+                      className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
                         currentStep === 1
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105 shadow-md hover:shadow-lg"
@@ -1457,7 +1237,12 @@ const KYCForm = () => {
                       </button>
                     ) : (
                       <button
-                        type="submit"
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          console.log("🎯 Submit button clicked explicitly");
+                          handleSubmit(e);
+                        }}
                         disabled={isSubmitting}
                         className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
                           isSubmitting
@@ -1467,9 +1252,25 @@ const KYCForm = () => {
                       >
                         {isSubmitting ? (
                           <span className="flex items-center">
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <svg
+                              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
                             </svg>
                             Submitting...
                           </span>
