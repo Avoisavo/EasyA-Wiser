@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import dotenv from 'dotenv';
 import { Client, Wallet } from "xrpl";
+import type { RipplePathFindRequest } from "xrpl/dist/npm/models/methods/ripplePathFind";
+import type { Payment } from "xrpl/dist/npm/models/transactions/payment";
 dotenv.config();
 
 const MARQETA_URL = 'https://sandbox-api.marqeta.com/v3';
@@ -27,7 +29,7 @@ async function executeXRPLPathfinding(amount: number) {
     // Convert USD amount to XRP drops (1 XRP = 1,000,000 drops)
     const xrpAmount = Math.floor(amount * 100000).toString(); // Convert USD to drops roughly
 
-    const pathfindRequest = {
+    const pathfindRequest: RipplePathFindRequest = {
       command: "ripple_path_find",
       source_account: sourceWallet.classicAddress,
       destination_account: destinationWallet.classicAddress,
@@ -51,7 +53,7 @@ async function executeXRPLPathfinding(amount: number) {
       console.log("Selected path:", selectedPath);
       console.log("Source amount needed (RLUSD):", selectedPath.source_amount);
 
-      const paymentTransaction = {
+      const paymentTransaction: Payment = {
         TransactionType: "Payment",
         Account: sourceWallet.classicAddress,
         Destination: destinationWallet.classicAddress,
@@ -67,13 +69,15 @@ async function executeXRPLPathfinding(amount: number) {
         wallet: sourceWallet 
       });
       
-      console.log('XRPL Transaction Result:', response.result.meta.TransactionResult);
+      // Log transaction result and hash, handling meta as string or object
+      const transactionResult = typeof response.result.meta === 'object' && response.result.meta !== null ? response.result.meta.TransactionResult : undefined;
+      console.log('XRPL Transaction Result:', transactionResult);
       console.log('XRPL Transaction Hash:', response.result.hash);
       
       return {
-        success: response.result.meta.TransactionResult === "tesSUCCESS",
+        success: transactionResult === "tesSUCCESS",
         hash: response.result.hash,
-        result: response.result.meta.TransactionResult,
+        result: transactionResult,
         sourceAmount: selectedPath.source_amount,
         destinationAmount: xrpAmount
       };
